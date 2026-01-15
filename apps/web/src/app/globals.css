@@ -1,0 +1,153 @@
+@import url('https://api.fontshare.com/v2/css?f[]=clash-display@200,300,400,500,600,700&display=swap');
+@import "tailwindcss";
+
+:root {
+  /* ... existing vars ... */
+/* Lambda High-Contrast Theme */
+  --background: #ffffff;
+  --foreground: #111827; /* Near Black */
+  
+  --card: #ffffff;
+  --card-foreground: #111827;
+  
+  --popover: #ffffff;
+  --popover-foreground: #111827;
+  
+  --primary: #0D9488; /* Tech Teal - Clear/Reliable/Security */
+  --primary-foreground: #ffffff;
+  
+  --secondary: #F0FDFA; /* Mint Tint - Background */
+  --secondary-foreground: #111827;
+  
+  --muted: #E5E7EB;
+  --muted-foreground: #6B7280;
+  
+  --accent: #5EEAD4; /* Bright Teal Accent */
+  --accent-foreground: #111827;
+  
+  --destructive: #EF4444;
+  --destructive-foreground: #ffffff;
+  
+  --border: #E5E7EB;
+  --input: #E5E7EB;
+  --ring: #2DD4BF;
+  
+  /* Sharp Edges = High Tech */
+  --radius: 0px; 
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  
+  /* Cyber Psychology Palette */
+  --success: #10b981; /* Emerald: Safety, Growth, Verified */
+  --warning: #f59e0b; /* Amber: Caution, Pending Risk */
+  --error: #ef4444; /* Red: Threat, Critical Breach */
+  --cyber: #06b6d4; /* Cyan: Digital, Future, Data Flow */
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --color-cyber: var(--cyber);
+  
+  --radius-lg: var(--radius);
+  --radius-md: var(--radius);
+  --radius-sm: var(--radius);
+
+  --font-sans: var(--font-inter); 
+  --font-mono: var(--font-mono); /* JetBrains Mono */
+  --font-display: 'Clash Display', sans-serif;
+
+  /* Accordion Animations */
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+}
+
+@keyframes accordion-down {
+  from { height: 0 }
+  to { height: var(--radix-accordion-content-height) }
+}
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height) }
+  to { height: 0 }
+}
+
+/* Explicit Animation Classes needed for Radix */
+.animate-accordion-down {
+  animation: accordion-down 0.2s ease-out;
+}
+.animate-accordion-up {
+  animation: accordion-up 0.2s ease-out;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-mono), monospace; /* Global JetBrains Mono */
+  overflow-x: hidden;
+}
+
+/* Global Typography Overrides */
+h1, h2, h3, h4, h5, h6, button, .btn {
+  font-family: var(--font-mono) !important; /* Enforce JetBrains Mono on headers too */
+}
+
+/* Specific button styling to update text tracking/weight if needed for Clash Display */
+button {
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* Lambda Style Utilities */
+
+/* Technical Lines */
+.tech-border-t {
+  border-top: 1px solid var(--border);
+}
+.tech-border-b {
+  border-bottom: 1px solid var(--border);
+}
+
+/* Monospace Badges */
+.mono-badge {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.75rem;
+}
+
+/* "Spec Sheet" Grid */
+.spec-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  border-left: 1px solid var(--border);
+}
+
+.spec-item {
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 2rem;
+  background: white;
+  transition: background-color 0.2s;
+}
+.spec-item:hover {
+  background: #fafafa;
+}

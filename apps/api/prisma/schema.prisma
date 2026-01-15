@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ComplianceStatus {
+  COMPLIANT
+  NON_COMPLIANT
+  PENDING
+  NOT_APPLICABLE
+}
+
+enum TaskStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  role      String   @default("STAFF") // ADMIN, AUDITOR, STAFF
+  tasks     Task[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// e.g. "ISO 27001", "GDPR"
+model ComplianceStandard {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  controls    Control[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// e.g. "9.1 Access Control"
+model Control {
+  id          String             @id @default(uuid())
+  standardId  String
+  code        String             // "9.1", "A.5.1"
+  name        String
+  description String?
+  standard    ComplianceStandard @relation(fields: [standardId], references: [id])
+  gaps        GapAnalysis[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+}
+
+// Raw evidence collected from cloud providers
+model Evidence {
+  id          String        @id @default(uuid())
+  source      String        // "AWS", "Azure", "GCP"
+  resourceId  String?       // "s3-bucket-xyz"
+  checkName   String        // "S3 Public Access"
+  result      Json          // Raw result data
+  timestamp   DateTime      @default(now())
+  gaps        GapAnalysis[]
+}
+
+// Mapping of Evidence to a Control to determine status
+model GapAnalysis {
+  id          String           @id @default(uuid())
+  controlId   String
+  evidenceId  String
+  status      ComplianceStatus
+  details     String?
+  control     Control          @relation(fields: [controlId], references: [id])
+  evidence    Evidence         @relation(fields: [evidenceId], references: [id])
+  tasks       Task[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+// Task assigned to fix a compliance gap
+model Task {
+  id            String      @id @default(uuid())
+  title         String
+  description   String?
+  assigneeId    String?
+  gapAnalysisId String?
+  status        TaskStatus  @default(OPEN)
+  dueDate       DateTime?
+  assignee      User?       @relation(fields: [assigneeId], references: [id])
+  gapAnalysis   GapAnalysis? @relation(fields: [gapAnalysisId], references: [id])
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
