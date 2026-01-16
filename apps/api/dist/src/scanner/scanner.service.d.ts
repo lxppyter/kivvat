@@ -30,8 +30,8 @@ export declare class ScannerService {
         status: string | null;
         userId: string;
         details: import("@prisma/client/runtime/client").JsonValue | null;
+        type: string;
         region: string | null;
         provider: string;
-        type: string;
     }[]>;
 }

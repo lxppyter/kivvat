@@ -9,9 +9,9 @@ export declare class AssetService {
         status: string | null;
         userId: string;
         details: import("@prisma/client/runtime/client").JsonValue | null;
+        type: string;
         region: string | null;
         provider: string;
-        type: string;
     }[]>;
     create(userId: string, data: any): Promise<{
         id: string;
@@ -20,8 +20,8 @@ export declare class AssetService {
         status: string | null;
         userId: string;
         details: import("@prisma/client/runtime/client").JsonValue | null;
+        type: string;
         region: string | null;
         provider: string;
-        type: string;
     }>;
 }

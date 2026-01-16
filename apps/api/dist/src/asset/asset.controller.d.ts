@@ -9,9 +9,9 @@ export declare class AssetController {
         status: string | null;
         userId: string;
         details: import("@prisma/client/runtime/client").JsonValue | null;
+        type: string;
         region: string | null;
         provider: string;
-        type: string;
     }[]>;
     create(body: any): Promise<{
         id: string;
@@ -20,8 +20,8 @@ export declare class AssetController {
         status: string | null;
         userId: string;
         details: import("@prisma/client/runtime/client").JsonValue | null;
+        type: string;
         region: string | null;
         provider: string;
-        type: string;
     }>;
 }

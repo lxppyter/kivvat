@@ -107,6 +107,10 @@ export const scanner = {
   getReports: () => api.get('/scanner/reports'),
 };
 
+export const reports = {
+  downloadPdf: (id: string) => api.get(`/reports/${id}/pdf`, { responseType: 'blob' }),
+};
+
 export const tasks = {
   getAll: () => api.get("/tasks"),
   create: (data: any) => api.post("/tasks", data),

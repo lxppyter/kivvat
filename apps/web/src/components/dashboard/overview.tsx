@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 
 export default function DashboardOverview() {
   const [loading, setLoading] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   // Real data state
   const [stats, setStats] = useState([
       { title: "Risk Score", value: "A+", subtext: "Excellent Standing", trend: "stable", icon: ShieldCheck },
@@ -55,6 +56,28 @@ export default function DashboardOverview() {
     } catch (e) {
         console.error("Failed to fetch reports", e);
     }
+  };
+
+  const handleDownload = async (id: string) => {
+      // In a real app we'd get the ID from the selected report. For now using 'latest' stub.
+      setDownloading(true);
+      try {
+          // 'latest' keyword is now handled by backend 
+          const res = await api.get(`/reports/latest/pdf`, { responseType: 'blob' }); 
+          // Create blob link to download
+          const url = window.URL.createObjectURL(new Blob([res.data]));
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', 'kivvat_report.pdf');
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+      } catch (e) {
+          console.error("Download failed", e);
+          alert("Rapor indirilemedi.");
+      } finally {
+          setDownloading(false);
+      }
   };
 
   const runScan = async () => {
@@ -106,8 +129,9 @@ export default function DashboardOverview() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-            <Button variant="outline" className="h-10 border border-border bg-background text-foreground font-mono text-xs font-semibold tracking-wide hover:bg-muted rounded-lg shadow-sm">
-                Rapor İndir
+            <Button variant="outline" onClick={() => handleDownload('latest')} disabled={downloading} className="h-10 border border-border bg-background text-foreground font-mono text-xs font-semibold tracking-wide hover:bg-muted rounded-lg shadow-sm">
+                {downloading ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : null}
+                {downloading ? "İndiriliyor..." : "Rapor İndir"}
             </Button>
             <Button onClick={runScan} disabled={loading} className="h-10 bg-primary text-primary-foreground font-mono text-xs font-semibold tracking-wide hover:bg-primary/90 rounded-lg shadow-sm">
                 {loading ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Play className="mr-2 h-3.5 w-3.5" />}

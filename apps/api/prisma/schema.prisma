@@ -121,6 +121,7 @@ model Evidence {
   resourceId  String?       // "s3-bucket-xyz"
   checkName   String        // "S3 Public Access"
   result      Json          // Raw result data
+  screenshotPath String?       // Path to local file or S3 URL
   timestamp   DateTime      @default(now())
   gaps        GapAnalysis[]
 

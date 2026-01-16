@@ -11,12 +11,13 @@ const common_1 = require("@nestjs/common");
 const evidence_service_1 = require("./evidence.service");
 const evidence_controller_1 = require("./evidence.controller");
 const analysis_module_1 = require("../analysis/analysis.module");
+const report_module_1 = require("../report/report.module");
 let EvidenceModule = class EvidenceModule {
 };
 exports.EvidenceModule = EvidenceModule;
 exports.EvidenceModule = EvidenceModule = __decorate([
     (0, common_1.Module)({
-        imports: [analysis_module_1.AnalysisModule],
+        imports: [analysis_module_1.AnalysisModule, report_module_1.ReportModule],
         controllers: [evidence_controller_1.EvidenceController],
         providers: [evidence_service_1.EvidenceService],
     })

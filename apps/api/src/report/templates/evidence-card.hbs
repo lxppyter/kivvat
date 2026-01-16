@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evidence Card</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            width: 600px;
+            overflow: hidden;
+            border: 1px solid #e1e4e8;
+        }
+        .header {
+            background: #1a1f2c; /* Cyber/Dark theme color */
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .title {
+            font-weight: 600;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .timestamp {
+            font-size: 12px;
+            opacity: 0.8;
+            font-family: monospace;
+        }
+        .content {
+            padding: 25px;
+        }
+        .row {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .label {
+            width: 150px;
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+        }
+        .value {
+            flex: 1;
+            color: #333;
+            font-size: 14px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-COMPLIANT {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #34d399;
+        }
+        .status-NON_COMPLIANT {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #f87171;
+        }
+        .footer {
+            background: #f8fafc;
+            padding: 10px 20px;
+            font-size: 10px;
+            color: #94a3b8;
+            text-align: right;
+            border-top: 1px solid #e2e8f0;
+        }
+        code {
+            background: #f1f5f9;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #0f172a;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="header">
+            <div class="title">
+                <span>🛡️ Kivvat Audit</span>
+            </div>
+            <div class="timestamp">{{timestamp}}</div>
+        </div>
+        <div class="content">
+            <div class="row">
+                <div class="label">Control ID</div>
+                <div class="value"><code>{{ruleId}}</code></div>
+            </div>
+             <div class="row">
+                <div class="label">Resource</div>
+                <div class="value"><strong>{{resourceId}}</strong></div>
+            </div>
+            <div class="row">
+                <div class="label">Status</div>
+                <div class="value">
+                    <span class="status-badge status-{{status}}">{{status}}</span>
+                </div>
+            </div>
+            <div class="row" style="border:none;">
+                <div class="label">Details</div>
+                <div class="value">{{details}}</div>
+            </div>
+        </div>
+        <div class="footer">
+            Generated automatically by Cloud-Guardian Engine • Ref: {{id}}
+        </div>
+    </div>
+</body>
+</html>
