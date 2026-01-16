@@ -11,9 +11,9 @@ export declare class TaskService {
         updatedAt: Date;
         status: import("@prisma/client").$Enums.TaskStatus;
         title: string;
-        gapAnalysisId: string | null;
         assigneeId: string | null;
         dueDate: Date | null;
+        gapAnalysisId: string | null;
     }>;
     createRemediationTask(gap: any): Promise<{
         id: string;
@@ -22,9 +22,9 @@ export declare class TaskService {
         updatedAt: Date;
         status: import("@prisma/client").$Enums.TaskStatus;
         title: string;
-        gapAnalysisId: string | null;
         assigneeId: string | null;
         dueDate: Date | null;
+        gapAnalysisId: string | null;
     }>;
     findAll(): Promise<({
         gapAnalysis: ({
@@ -58,9 +58,9 @@ export declare class TaskService {
         updatedAt: Date;
         status: import("@prisma/client").$Enums.TaskStatus;
         title: string;
-        gapAnalysisId: string | null;
         assigneeId: string | null;
         dueDate: Date | null;
+        gapAnalysisId: string | null;
     })[]>;
     findOne(id: string): Promise<{
         gapAnalysis: {
@@ -90,9 +90,9 @@ export declare class TaskService {
         updatedAt: Date;
         status: import("@prisma/client").$Enums.TaskStatus;
         title: string;
-        gapAnalysisId: string | null;
         assigneeId: string | null;
         dueDate: Date | null;
+        gapAnalysisId: string | null;
     }>;
     update(id: string, dto: UpdateTaskDto): Promise<{
         id: string;
@@ -101,8 +101,8 @@ export declare class TaskService {
         updatedAt: Date;
         status: import("@prisma/client").$Enums.TaskStatus;
         title: string;
-        gapAnalysisId: string | null;
         assigneeId: string | null;
         dueDate: Date | null;
+        gapAnalysisId: string | null;
     }>;
 }

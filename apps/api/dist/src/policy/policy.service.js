@@ -56,6 +56,33 @@ let PolicyService = class PolicyService {
             },
         });
     }
+    async updatePolicy(id, newContent) {
+        const policy = await this.prisma.policyTemplate.findUnique({ where: { id } });
+        if (!policy)
+            throw new Error('Policy not found');
+        await this.prisma.policyVersion.create({
+            data: {
+                policyId: id,
+                version: policy.version,
+                content: policy.content,
+            },
+        });
+        const currentVer = parseFloat(policy.version) || 1.0;
+        const newVer = (currentVer + 0.1).toFixed(1);
+        return this.prisma.policyTemplate.update({
+            where: { id },
+            data: {
+                content: newContent,
+                version: newVer,
+            },
+        });
+    }
+    async getHistory(id) {
+        return this.prisma.policyVersion.findMany({
+            where: { policyId: id },
+            orderBy: { createdAt: 'desc' },
+        });
+    }
     async downloadTemplate(templateId, companyName) {
         const template = await this.prisma.policyTemplate.findUnique({
             where: { id: templateId },

@@ -5,9 +5,9 @@ Bu yol haritası (roadmap), mevcut teknik denetim sonuçlarına dayanarak projen
 ## Faz 1: "Denetçi Mutluluğu" (Core Value Completion)
 **Hedef:** Denetim sürecini manuel ekran görüntüsü almaktan kurtarıp, tek tıkla raporlanabilir hale getirmek. Bu faz tamamlandığında ürün "satılabilir" hale gelir.
 
-- [ ] **Evidence-Auto (Screenshooter):** Kanıtların sadece JSON değil, görsel olarak da (HTML -> Image) saklanması. Denetçiler görsel kanıt sever.
-- [ ] **Auditor-X (Export):** Tüm sürecin PDF ve Excel olarak dışarı aktarılması. "Raporu indir" butonu çalışmalı.
-- [ ] **Policy Versioning:** Politikaların revize edilebilir olması (örn. yılda bir güncelleme gerekliliği için).
+- [x] **Evidence-Auto (Screenshooter):** Kanıtların sadece JSON değil, görsel olarak da (HTML -> Image) saklanması. Denetçiler görsel kanıt sever.
+- [x] **Auditor-X (Export):** Tüm sürecin PDF ve Excel olarak dışarı aktarılması. "Raporu indir" butonu çalışmalı.
+- [x] **Policy Versioning:** Politikaların revize edilebilir olması (örn. yılda bir güncelleme gerekliliği için).
 
 ## Faz 2: "Tam Görünürlük" (Scope Expansion)
 **Hedef:** Sadece AWS değil, şirketin tüm dijital ve fiziksel varlıklarını kapsamak.

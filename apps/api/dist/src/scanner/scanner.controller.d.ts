@@ -24,8 +24,8 @@ export declare class ScannerController {
         userId: string;
         details: import("@prisma/client/runtime/client").JsonValue | null;
         type: string;
-        region: string | null;
         provider: string;
+        region: string | null;
     }[]>;
     runScan(body: {
         provider: string;

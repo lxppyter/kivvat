@@ -9,6 +9,7 @@ export declare class PolicyService {
         updatedAt: Date;
         content: string;
         category: string;
+        version: string;
     }[]>;
     getAssignments(userId?: string): Promise<{
         assignments: ({
@@ -46,6 +47,22 @@ export declare class PolicyService {
         policyId: string;
         userId: string;
     }>;
+    updatePolicy(id: string, newContent: string): Promise<{
+        id: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        content: string;
+        category: string;
+        version: string;
+    }>;
+    getHistory(id: string): Promise<{
+        id: string;
+        createdAt: Date;
+        content: string;
+        version: string;
+        policyId: string;
+    }[]>;
     downloadTemplate(templateId: string, companyName: string): Promise<{
         name: string;
         content: string;

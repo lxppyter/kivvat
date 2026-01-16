@@ -31,11 +31,11 @@ Bu dosya Kivvat projesinin anlık durumunu, tamamlanan özellikleri ve yapılmas
 
 ## 📸 Evidence-Auto (Otomatik Kanıt)
 - [x] **Timestamped Evidence:** Kanıtların zaman damgasıyla DB'ye kaydı.
-- [ ] **Auto-Screenshooter:**
-    - [ ] API kanıtlarının görsel ekran görüntüsüne dönüştürülmesi (Puppeteer/Playwright).
-- [ ] **Version History:**
+- [x] **Auto-Screenshooter:**
+    - [x] API kanıtlarının görsel ekran görüntüsüne dönüştürülmesi (Puppeteer/Playwright).
+- [x] **Version History:**
     - [x] Denetim geçmişi (Scan History).
-    - [ ] **Politika Versiyonlama:** Şirket politikalarının (v1.0 -> v1.2) versiyon takibi.
+    - [x] **Politika Versiyonlama:** Şirket politikalarının (v1.0 -> v1.2) versiyon takibi.
 
 ## 📦 Asset-Intel (Varlık Yönetimi)
 - [x] **Cloud Inventory:** AWS (EC2, S3, IAM) kaynaklarının otomatik keşfi.
@@ -52,7 +52,7 @@ Bu dosya Kivvat projesinin anlık durumunu, tamamlanan özellikleri ve yapılmas
 ## 💼 Auditor-X (Denetçi Portalı)
 - [ ] **Safe-Link Access:** Denetçiler için sadece okuma yetkili, süreli paylaşım linki.
 - [ ] **One-Click Export:**
-    - [ ] Tüm uyumluluk durumunun tek PDF/Excel paketi olarak ihracı.
+    - [x] Tüm uyumluluk durumunun tek PDF/Excel paketi olarak ihracı.
     - [ ] Denetçi dostu klasör yapısında çıktı (Zip).
 
 ---

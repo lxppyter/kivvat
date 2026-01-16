@@ -11,9 +11,9 @@ export declare class TaskController {
         updatedAt: Date;
         status: import("@prisma/client").$Enums.TaskStatus;
         title: string;
-        gapAnalysisId: string | null;
         assigneeId: string | null;
         dueDate: Date | null;
+        gapAnalysisId: string | null;
     }>;
     findAll(): Promise<({
         gapAnalysis: ({
@@ -47,9 +47,9 @@ export declare class TaskController {
         updatedAt: Date;
         status: import("@prisma/client").$Enums.TaskStatus;
         title: string;
-        gapAnalysisId: string | null;
         assigneeId: string | null;
         dueDate: Date | null;
+        gapAnalysisId: string | null;
     })[]>;
     findOne(id: string): Promise<{
         gapAnalysis: {
@@ -79,9 +79,9 @@ export declare class TaskController {
         updatedAt: Date;
         status: import("@prisma/client").$Enums.TaskStatus;
         title: string;
-        gapAnalysisId: string | null;
         assigneeId: string | null;
         dueDate: Date | null;
+        gapAnalysisId: string | null;
     }>;
     update(id: string, updateTaskDto: UpdateTaskDto): Promise<{
         id: string;
@@ -90,8 +90,8 @@ export declare class TaskController {
         updatedAt: Date;
         status: import("@prisma/client").$Enums.TaskStatus;
         title: string;
-        gapAnalysisId: string | null;
         assigneeId: string | null;
         dueDate: Date | null;
+        gapAnalysisId: string | null;
     }>;
 }

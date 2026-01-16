@@ -91,6 +91,8 @@ export const policy = {
   getAssignments: (userId?: string) => api.get("/policies/assignments", { params: { userId } }),
   sign: (id: string) => api.post(`/policies/sign/${id}`),
   download: (id: string, companyName: string) => api.get(`/policies/download/${id}`, { params: { companyName } }),
+  update: (id: string, content: string) => api.post(`/policies/${id}`, { content }),
+  getHistory: (id: string) => api.get(`/policies/${id}/history`),
 };
 
 export const evidence = {

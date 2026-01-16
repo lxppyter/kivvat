@@ -38,6 +38,10 @@ export default function PoliciesPage() {
   const [myAssignments, setMyAssignments] = useState<any[]>([]);
   const [selectedPolicy, setSelectedPolicy] = useState<{ id: string; name: string; content: string } | null>(null);
 
+  // For Management
+  const [managePolicy, setManagePolicy] = useState<any>(null);
+  const [history, setHistory] = useState<any[]>([]);
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -229,10 +233,34 @@ export default function PoliciesPage() {
                                             variant="secondary" 
                                             className="gap-2"
                                             onClick={async () => {
+                                                const { policy } = await import("@/lib/api");
+                                                const res = await policy.getHistory(tmpl.id);
+                                                setHistory(res.data);
+                                                setManagePolicy({ ...tmpl, content: tmpl.content, version: tmpl.version || '1.0' });
+                                            }}
+                                        >
+                                            <Lock className="h-3 w-3" /> Manage
+                                        </Button>
+
+                                        <Button 
+                                            size="sm" 
+                                            variant="secondary" 
+                                            className="gap-2"
+                                            onClick={async () => {
                                                 try {
                                                     const { policy } = await import("@/lib/api");
                                                     const res = await policy.download(tmpl.id, "Demo Company Ltd.");
-                                                    alert(`Downloaded Template:\n\n${res.data.name}\n\nContent Preview:\n${res.data.content.substring(0, 100)}...`);
+                                                    
+                                                    // Create blob and simple download
+                                                    const blob = new Blob([res.data.content], { type: 'text/markdown' });
+                                                    const url = window.URL.createObjectURL(blob);
+                                                    const a = document.createElement('a');
+                                                    a.href = url;
+                                                    a.download = `${res.data.name.replace(/\s+/g, '_')}_Template.md`;
+                                                    document.body.appendChild(a);
+                                                    a.click();
+                                                    window.URL.revokeObjectURL(url);
+                                                    document.body.removeChild(a);
                                                 } catch (e) {
                                                     alert("Failed to download template");
                                                 }
@@ -381,6 +409,75 @@ export default function PoliciesPage() {
                     </CardContent>
                 </Card>
             </TabsContent>
+
+            {/* MANAGE DIALOG (Edit & History) */}
+            <Dialog open={!!managePolicy} onOpenChange={(open) => !open && setManagePolicy(null)}>
+                <DialogContent className="max-w-4xl h-[85vh] flex flex-col">
+                    <DialogHeader>
+                        <DialogTitle>{managePolicy?.name} - Version Management</DialogTitle>
+                        <DialogDescription>
+                            Update policy content or view previous versions.
+                        </DialogDescription>
+                    </DialogHeader>
+                    
+                    <Tabs defaultValue="edit" className="flex-1 flex flex-col overflow-hidden">
+                        <TabsList>
+                            <TabsTrigger value="edit">Edit Current Version (v{managePolicy?.version})</TabsTrigger>
+                            <TabsTrigger value="history">Version History</TabsTrigger>
+                        </TabsList>
+                        
+                        <TabsContent value="edit" className="flex-1 flex flex-col gap-4 mt-4 overflow-hidden">
+                            <textarea 
+                                className="flex-1 w-full p-4 font-mono text-sm border rounded-md bg-muted/30 resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+                                value={managePolicy?.content || ''}
+                                onChange={(e) => setManagePolicy(prev => prev ? { ...prev, content: e.target.value } : null)}
+                            />
+                            <div className="flex justify-end gap-2">
+                                <Button variant="outline" onClick={() => setManagePolicy(null)}>Cancel</Button>
+                                <Button onClick={async () => {
+                                    if (!managePolicy) return;
+                                    try {
+                                        const { policy } = await import("@/lib/api");
+                                        await policy.update(managePolicy.id, managePolicy.content);
+                                        alert("Policy updated! A new version has been created.");
+                                        setManagePolicy(null);
+                                        // Refresh
+                                        window.location.reload(); 
+                                    } catch (e) {
+                                        alert("Failed to update policy");
+                                    }
+                                }}>
+                                    Save New Version
+                                </Button>
+                            </div>
+                        </TabsContent>
+                        
+                        <TabsContent value="history" className="flex-1 overflow-auto mt-4">
+                            <div className="border rounded-md">
+                                <div className="grid grid-cols-3 p-3 bg-muted font-medium text-sm">
+                                    <div>Version</div>
+                                    <div>Date Archived</div>
+                                    <div>Action</div>
+                                </div>
+                                <div className="divide-y">
+                                    {history.length === 0 && <div className="p-4 text-center text-muted-foreground">No history found.</div>}
+                                    {history.map((h: any) => (
+                                        <div key={h.id} className="grid grid-cols-3 p-3 text-sm items-center hover:bg-muted/30">
+                                            <div className="font-mono">v{h.version}</div>
+                                            <div>{new Date(h.createdAt).toLocaleString()}</div>
+                                            <div>
+                                                <Button size="sm" variant="ghost" onClick={() => {
+                                                    alert(`Content of v${h.version}:\n\n${h.content.substring(0, 200)}...`);
+                                                }}>View Content</Button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </TabsContent>
+                    </Tabs>
+                </DialogContent>
+            </Dialog>
 
             <Dialog open={!!selectedPolicy} onOpenChange={(open) => !open && setSelectedPolicy(null)}>
                 <DialogContent className="max-w-2xl h-[80vh] flex flex-col">

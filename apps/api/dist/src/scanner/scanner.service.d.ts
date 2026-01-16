@@ -31,7 +31,7 @@ export declare class ScannerService {
         userId: string;
         details: import("@prisma/client/runtime/client").JsonValue | null;
         type: string;
-        region: string | null;
         provider: string;
+        region: string | null;
     }[]>;
 }

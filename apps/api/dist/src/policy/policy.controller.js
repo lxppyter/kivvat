@@ -32,6 +32,12 @@ let PolicyController = class PolicyController {
     async signPolicy(id) {
         return this.policyService.signPolicy(id);
     }
+    async updatePolicy(id, content) {
+        return this.policyService.updatePolicy(id, content);
+    }
+    async getHistory(id) {
+        return this.policyService.getHistory(id);
+    }
 };
 exports.PolicyController = PolicyController;
 __decorate([
@@ -62,6 +68,21 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], PolicyController.prototype, "signPolicy", null);
+__decorate([
+    (0, common_1.Post)(':id'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)('content')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", Promise)
+], PolicyController.prototype, "updatePolicy", null);
+__decorate([
+    (0, common_1.Get)(':id/history'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], PolicyController.prototype, "getHistory", null);
 exports.PolicyController = PolicyController = __decorate([
     (0, common_1.Controller)('policies'),
     __metadata("design:paramtypes", [policy_service_1.PolicyService])

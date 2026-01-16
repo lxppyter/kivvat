@@ -23,4 +23,14 @@ export class PolicyController {
   async signPolicy(@Param('id') id: string) {
     return this.policyService.signPolicy(id);
   }
+
+  @Post(':id') // Using POST for update to avoid PATCH complexity for now
+  async updatePolicy(@Param('id') id: string, @Body('content') content: string) {
+    return this.policyService.updatePolicy(id, content);
+  }
+
+  @Get(':id/history')
+  async getHistory(@Param('id') id: string) {
+    return this.policyService.getHistory(id);
+  }
 }
