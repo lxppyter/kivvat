@@ -33,6 +33,40 @@ let EvidenceService = class EvidenceService {
         console.log(`[Evidence] Collected from ${provider}:`, evidence);
         return evidence;
     }
+    async getHistory(controlId) {
+        return this.prisma.evidence.findMany({
+            where: {
+                gaps: {
+                    some: {
+                        controlId: controlId
+                    }
+                }
+            },
+            include: {
+                gaps: true
+            },
+            orderBy: {
+                timestamp: 'desc'
+            },
+            take: 10
+        });
+    }
+    async getEvidence(id) {
+        return this.prisma.evidence.findUnique({
+            where: { id },
+            include: {
+                gaps: {
+                    include: {
+                        control: {
+                            include: {
+                                standard: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
 };
 exports.EvidenceService = EvidenceService;
 exports.EvidenceService = EvidenceService = __decorate([

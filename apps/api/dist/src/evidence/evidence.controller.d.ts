@@ -1,27 +1,59 @@
 import { EvidenceService } from './evidence.service';
-import { AnalysisService } from '../analysis/analysis.service';
 export declare class EvidenceController {
     private readonly evidenceService;
-    private readonly analysisService;
-    constructor(evidenceService: EvidenceService, analysisService: AnalysisService);
-    runScan(provider?: string): Promise<{
-        message: string;
-        evidence: {
+    constructor(evidenceService: EvidenceService);
+    getHistory(controlId: string): Promise<({
+        gaps: {
             id: string;
-            source: string;
-            resourceId: string | null;
-            checkName: string;
-            result: import("@prisma/client/runtime/client").JsonValue;
-            timestamp: Date;
-        };
-        gap: {
-            id: string;
-            controlId: string;
-            evidenceId: string;
-            status: import("@prisma/client").$Enums.ComplianceStatus;
-            details: string | null;
             createdAt: Date;
             updatedAt: Date;
-        };
-    }>;
+            status: import("@prisma/client").$Enums.ComplianceStatus;
+            details: string | null;
+            controlId: string;
+            evidenceId: string;
+        }[];
+    } & {
+        result: import("@prisma/client/runtime/client").JsonValue;
+        id: string;
+        source: string;
+        resourceId: string | null;
+        checkName: string;
+        timestamp: Date;
+    })[]>;
+    getEvidence(id: string): Promise<({
+        gaps: ({
+            control: {
+                standard: {
+                    id: string;
+                    name: string;
+                    description: string | null;
+                    createdAt: Date;
+                    updatedAt: Date;
+                };
+            } & {
+                id: string;
+                standardId: string;
+                code: string;
+                name: string;
+                description: string | null;
+                createdAt: Date;
+                updatedAt: Date;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            status: import("@prisma/client").$Enums.ComplianceStatus;
+            details: string | null;
+            controlId: string;
+            evidenceId: string;
+        })[];
+    } & {
+        result: import("@prisma/client/runtime/client").JsonValue;
+        id: string;
+        source: string;
+        resourceId: string | null;
+        checkName: string;
+        timestamp: Date;
+    }) | null>;
 }

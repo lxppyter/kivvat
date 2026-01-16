@@ -13,7 +13,7 @@ export function Pricing() {
            <span className="font-mono text-xs font-bold text-primary tracking-widest uppercase mb-4 block">
             INVESTMENT
           </span>
-          <h2 className="text-5xl lg:text-7xl font-bold tracking-tighter text-neutral-900 leading-[0.9] mb-6">
+          <h2 className="text-5xl lg:text-7xl font-bold tracking-tighter bg-gradient-to-b from-neutral-900 to-neutral-500 text-transparent bg-clip-text leading-[0.9] mb-6">
             FİYATLANDIRMA.
           </h2>
           <p className="text-xl text-neutral-500 font-light max-w-2xl leading-relaxed">

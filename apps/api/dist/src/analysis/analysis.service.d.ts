@@ -7,11 +7,11 @@ export declare class AnalysisService {
     constructor(prisma: PrismaService, taskService: TaskService);
     analyzeEvidence(evidence: Evidence): Promise<{
         id: string;
-        controlId: string;
-        evidenceId: string;
-        status: import("@prisma/client").$Enums.ComplianceStatus;
-        details: string | null;
         createdAt: Date;
         updatedAt: Date;
+        status: import("@prisma/client").$Enums.ComplianceStatus;
+        details: string | null;
+        controlId: string;
+        evidenceId: string;
     }>;
 }

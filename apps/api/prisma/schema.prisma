@@ -23,11 +23,68 @@ enum TaskStatus {
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
-  name      String?
+  password          String
+  hashedRefreshToken String?
+  name              String?
+  companyName       String?
   role      String   @default("STAFF") // ADMIN, AUDITOR, STAFF
+  reports   ScanReport[]
+  assets    Asset[]
   tasks     Task[]
+  policyAssignments PolicyAssignment[]
+  subscription Subscription?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  @@map("users")
+}
+
+model Subscription {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  plan      String   @default("COMPLIANCE CORE") // COMPLIANCE CORE, TRUST ARCHITECT, TOTAL AUTHORITY, CERTIFICATION FAST-TRACK
+  status    String   @default("ACTIVE") // ACTIVE, CANCELED, EXPIRED
+  
+  startDate DateTime @default(now())
+  endDate   DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("subscriptions")
+}
+
+model Asset {
+  id        String   @id @default(uuid())
+  provider  String   // AWS, AZURE
+  type      String   // EC2, S3, IAM_USER
+  name      String
+  region    String?
+  status    String?  // RUNNING, STOPPED, ACTIVE
+  details   Json?    // Extra metadata (instance type, size, etc.)
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  
+  updatedAt DateTime @updatedAt
+  
+  @@map("assets")
+}
+
+model ScanReport {
+  id        String   @id @default(uuid())
+  provider  String
+  score     Int
+  status    String   // 'COMPLETED', 'FAILED'
+  results   Json     // Stores the detailed ScanResult[] array
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  
+  createdAt DateTime @default(now())
+
+  @@map("scan_reports")
 }
 
 // e.g. "ISO 27001", "GDPR"
@@ -38,6 +95,8 @@ model ComplianceStandard {
   controls    Control[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  @@map("compliance_standards")
 }
 
 // e.g. "9.1 Access Control"
@@ -51,6 +110,8 @@ model Control {
   gaps        GapAnalysis[]
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
+
+  @@map("controls")
 }
 
 // Raw evidence collected from cloud providers
@@ -62,6 +123,8 @@ model Evidence {
   result      Json          // Raw result data
   timestamp   DateTime      @default(now())
   gaps        GapAnalysis[]
+
+  @@map("evidences")
 }
 
 // Mapping of Evidence to a Control to determine status
@@ -76,6 +139,8 @@ model GapAnalysis {
   tasks       Task[]
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
+
+  @@map("gap_analyses")
 }
 
 // Task assigned to fix a compliance gap
@@ -91,4 +156,35 @@ model Task {
   gapAnalysis   GapAnalysis? @relation(fields: [gapAnalysisId], references: [id])
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
+
+  @@map("tasks")
+}
+
+model PolicyTemplate {
+  id          String   @id @default(uuid())
+  name        String   
+  content     String   @db.Text
+  category    String   // "ISO 27001", "HR", "General"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  assignments PolicyAssignment[]
+
+  @@map("policy_templates")
+}
+
+model PolicyAssignment {
+  id          String        @id @default(uuid())
+  policyId    String
+  userId      String
+  status      String        @default("PENDING") // PENDING, SIGNED, OVERDUE
+  signedAt    DateTime?
+  
+  user        User          @relation(fields: [userId], references: [id])
+  policy      PolicyTemplate @relation(fields: [policyId], references: [id])
+  
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@unique([userId, policyId])
+  @@map("policy_assignments")
 }

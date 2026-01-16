@@ -1,174 +1,171 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { gsap } from "gsap";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ShieldAlert, CheckCircle2, AlertTriangle, ArrowRight } from "lucide-react";
+import { ShieldCheck, AlertTriangle, CheckCircle2, Activity, Play, Loader2, AlertCircle } from "lucide-react";
+import api, { scanner } from "@/lib/api";
+import { useEffect, useState } from "react";
 
-export function DashboardOverview() {
-  const containerRef = useRef(null);
+export default function DashboardOverview() {
+  const [loading, setLoading] = useState(false);
+  // Real data state
+  const [stats, setStats] = useState([
+      { title: "Risk Score", value: "A+", subtext: "Excellent Standing", trend: "stable", icon: ShieldCheck },
+      { title: "Active Issues", value: "0", subtext: "0 Critical, 0 High", trend: "down", icon: AlertTriangle },
+      { title: "Compliance", value: "100%", subtext: "ISO 27001 Ready", trend: "up", icon: CheckCircle2 },
+      { title: "Cloud Assets", value: "0", subtext: "Total Resources", trend: "up", icon: Activity },
+  ]);
+  const [activities, setActivities] = useState<any[]>([]);
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.from(".stat-card", {
-        y: 20,
-        opacity: 0,
-        duration: 0.5,
-        stagger: 0.1,
-        ease: "power2.out",
-      });
-      
-      gsap.from(".content-section", {
-        y: 30,
-        opacity: 0,
-        duration: 0.6,
-        delay: 0.3,
-        ease: "power2.out",
-      });
-    }, containerRef);
-
-    return () => ctx.revert();
+    fetchLatestReport();
   }, []);
 
+  const fetchLatestReport = async () => {
+    try {
+        const res = await scanner.getReports();
+        if (res.data && res.data.length > 0) {
+            const latest = res.data[0];
+            const results = latest.results as any[];
+            
+            // Process Results for Dashboard
+            const failCount = results.filter((r: any) => r.status === 'NON_COMPLIANT').length;
+            const passCount = results.filter((r: any) => r.status === 'COMPLIANT').length;
+            const total = results.length;
+            const score = latest.score;
+
+            // Update Stats
+            setStats([
+                { title: "Risk Score", value: score >= 90 ? "A+" : score >= 70 ? "B" : "D", subtext: "Dynamic Analysis", trend: "stable", icon: ShieldCheck },
+                { title: "Active Issues", value: failCount.toString(), subtext: `${failCount} Non-Compliant Rules`, trend: "down", icon: AlertTriangle },
+                { title: "Compliance", value: `${score}%`, subtext: "ISO 27001 Ready", trend: "up", icon: CheckCircle2 },
+                { title: "Scanned Assets", value: total.toString(), subtext: "Cloud + Physical", trend: "up", icon: Activity },
+            ]);
+
+            // Update Activity Log
+            const newActivities = results.map((r: any, i: number) => ({
+                id: i,
+                type: r.status === 'COMPLIANT' ? 'success' : 'issue',
+                message: `${r.ruleId}: ${r.details}`,
+                time: new Date(latest.createdAt).toLocaleTimeString(),
+                icon: r.status === 'COMPLIANT' ? CheckCircle2 : AlertCircle
+            }));
+            setActivities(newActivities);
+        }
+    } catch (e) {
+        console.error("Failed to fetch reports", e);
+    }
+  };
+
+  const runScan = async () => {
+      setLoading(true);
+      try {
+          // Retrieve credentials from storage
+          const storedCreds = localStorage.getItem('aws_credentials');
+          let provider = 'aws';
+          let credentials = {};
+
+          if (!storedCreds) {
+              // If no AWS creds, we fallback to LOCAL/DEMO scan for Manual Assets
+              const confirmLocal = confirm("AWS bilgileri bulunamadı. Sadece 'Manuel Varlıklar' (Laptop, Sunucu vb.) üzerinde güvenlik taraması yapılsın mı?");
+              if (!confirmLocal) {
+                  setLoading(false);
+                  return;
+              }
+              provider = 'demo'; // This tells backend to skip AWS scan but run Manual verify
+          } else {
+              credentials = JSON.parse(storedCreds);
+          }
+          
+          // Call Real Scanner API
+          const response = await api.post('/scanner/run', { 
+              provider, 
+              credentials 
+          });
+
+          const results = response.data;
+          // Refresh dashboard data via standard fetch to ensure consistency
+          fetchLatestReport();
+
+      } catch (error) {
+          console.error("Scan failed", error);
+          alert("Tarama başlatılamadı. API bağlantısını kontrol edin.");
+      } finally {
+          setLoading(false);
+      }
+  };
+
   return (
-    <div ref={containerRef} className="space-y-8">
-      {/* Hero / Welcome */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold font-heading bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
-            Security Overview
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Real-time compliance monitoring and risk assessment.
+    <div className="space-y-8">
+      {/* Header & Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-8">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground font-mono">Genel Bakış</h1>
+          <p className="text-sm text-muted-foreground font-mono">
+            Sistem durumu ve güvenlik risk skoru.
           </p>
         </div>
-        <Button variant="neon">
-          Run New Scan
-        </Button>
+        <div className="flex items-center gap-3">
+            <Button variant="outline" className="h-10 border border-border bg-background text-foreground font-mono text-xs font-semibold tracking-wide hover:bg-muted rounded-lg shadow-sm">
+                Rapor İndir
+            </Button>
+            <Button onClick={runScan} disabled={loading} className="h-10 bg-primary text-primary-foreground font-mono text-xs font-semibold tracking-wide hover:bg-primary/90 rounded-lg shadow-sm">
+                {loading ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Play className="mr-2 h-3.5 w-3.5" />}
+                {loading ? "Taranıyor..." : "Taramayı Başlat"}
+            </Button>
+        </div>
       </div>
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="stat-card border-l-4 border-l-primary">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Overall Score
-            </CardTitle>
-            <ShieldAlert className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">85%</div>
-            <p className="text-xs text-muted-foreground">
-              +2.5% from last month
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="stat-card border-l-4 border-l-green-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Passing Checks
-            </CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">142</div>
-            <p className="text-xs text-muted-foreground">
-              12 new passed
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="stat-card border-l-4 border-l-destructive">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Critical Riscs
-            </CardTitle>
-            <AlertTriangle className="h-4 w-4 text-destructive" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">3</div>
-            <p className="text-xs text-muted-foreground">
-              Requires immediate attention
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="stat-card border-l-4 border-l-secondary">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Pending Tasks
-            </CardTitle>
-            <ArrowRight className="h-4 w-4 text-secondary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">12</div>
-            <p className="text-xs text-muted-foreground">
-              4 assigned to you
-            </p>
-          </CardContent>
-        </Card>
+        {stats.map((stat, i) => (
+            <Card key={i} className="border-border bg-card shadow-sm rounded-xl">
+                <CardContent className="p-6">
+                    <div className="flex items-center justify-between space-y-0 pb-2">
+                        <span className="text-sm font-medium font-mono text-muted-foreground">{stat.title}</span>
+                        <stat.icon className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <div className="flex items-baseline gap-2 mt-2">
+                        <div className="text-2xl font-bold font-mono text-foreground tracking-tight">{stat.value}</div>
+                        <span className={`text-xs font-mono font-medium ${stat.trend === 'up' ? 'text-emerald-600' : 'text-rose-600'}`}>{stat.subtext}</span>
+                    </div>
+                </CardContent>
+            </Card>
+        ))}
       </div>
 
-      {/* Recent Activity / Evidence */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7 content-section">
-        <Card className="col-span-4">
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>
-              Latest compliance checks and automated actions.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {[
-                { name: "S3 Public Access", status: "Failed", time: "2 min ago", desc: "Bucket 'kivvat-logs' is public" },
-                { name: "MFA Check", status: "Passed", time: "15 min ago", desc: "Root account MFA enabled" },
-                { name: "Port 22 SSH", status: "Passed", time: "1 hour ago", desc: "No open SSH ports found" },
-              ].map((item, i) => (
-                <div key={i} className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className={`h-2 w-2 rounded-full ${item.status === 'Passed' ? 'bg-green-500' : 'bg-destructive'}`} />
-                    <div>
-                      <p className="text-sm font-medium leading-none">{item.name}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{item.desc}</p>
-                    </div>
-                  </div>
-                  <span className="text-xs text-muted-foreground">{item.time}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="col-span-3">
-          <CardHeader>
-            <CardTitle>Compliance Standards</CardTitle>
-            <CardDescription>
-              Progress by framework.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {[
-                { name: "ISO 27001", progress: 78, color: "bg-primary" },
-                { name: "GDPR", progress: 92, color: "bg-green-500" },
-                { name: "SOC 2", progress: 45, color: "bg-orange-500" },
-              ].map((std) => (
-                <div key={std.name} className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium">{std.name}</span>
-                    <span className="text-muted-foreground">{std.progress}%</span>
-                  </div>
-                  <div className="h-2 w-full rounded-full bg-secondary/20">
-                    <div
-                      className={`h-full rounded-full transition-all duration-1000 ${std.color}`}
-                      style={{ width: `${std.progress}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+      {/* Recent Activity */}
+      <div className="grid gap-4 md:grid-cols-1">
+         <Card className="border-border bg-card shadow-sm rounded-xl">
+             <CardHeader className="px-6 py-5 border-b border-border/40">
+                 <CardTitle className="text-base font-bold font-mono text-foreground">Son Aktiviteler</CardTitle>
+                 <CardDescription className="text-xs font-mono text-muted-foreground">Sistem tarafından algılanan son olaylar.</CardDescription>
+             </CardHeader>
+             <CardContent className="p-0">
+                 <div className="divide-y divide-border/40">
+                    {activities.length === 0 && (
+                        <div className="p-8 text-center text-sm font-mono text-muted-foreground">
+                            Henüz taranmış veri yok. "Taramayı Başlat" butonuna basın.
+                        </div>
+                    )}
+                    {activities.map((item) => (
+                        <div key={item.id} className="flex items-center gap-4 p-4 hover:bg-muted/30 transition-colors">
+                            <div className={`h-8 w-8 rounded-full flex items-center justify-center border ${
+                                item.type === 'issue' 
+                                ? 'bg-rose-50 border-rose-100 text-rose-600' 
+                                : 'bg-emerald-50 border-emerald-100 text-emerald-600'
+                            }`}>
+                                <item.icon className="h-4 w-4" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium font-mono text-foreground truncate">{item.message}</p>
+                                <p className="text-xs text-muted-foreground font-mono">{item.time}</p>
+                            </div>
+                        </div>
+                    ))}
+                 </div>
+             </CardContent>
+         </Card>
       </div>
     </div>
   );

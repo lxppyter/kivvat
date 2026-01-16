@@ -59,7 +59,7 @@ export function ProblemSection() {
              [ SYSTEM_STATUS: UNSECURED ]
           </span>
 
-          <h2 className="text-5xl lg:text-7xl font-bold tracking-tighter text-neutral-900 leading-[0.9] mb-8">
+          <h2 className="text-5xl lg:text-7xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-neutral-900 to-neutral-500 leading-[0.9] mb-8">
             UYUMLULUK SÜREÇLERİNİ <span className="relative inline-block mx-2"><TextStrikethrough color="#381D2A" className="text-neutral-900">MANUEL</TextStrikethrough></span> <br/>
             <span className="text-[#381D2A] block mt-2">YÖNETMEYİN.</span>
           </h2>

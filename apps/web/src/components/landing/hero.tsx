@@ -95,7 +95,7 @@ export function Hero() {
 
         {/* Main Headline (Scroll Parallax) */}
         <h1 ref={textRef} className="text-7xl lg:text-9xl font-bold text-neutral-900 leading-[0.9] mb-10 font-mono tracking-tight">
-          <div className="hero-text-line text-left-anim block mb-2">
+          <div className="hero-text-line text-left-anim block mb-2 bg-gradient-to-b from-neutral-900 to-neutral-500 text-transparent bg-clip-text">
              UYUMLULUK
           </div>
           <div className="hero-text-line text-right-anim text-transparent bg-clip-text bg-gradient-to-r from-[#0D9488] via-[#2DD4BF] to-[#0D9488] animate-gradient-x tracking-widest">

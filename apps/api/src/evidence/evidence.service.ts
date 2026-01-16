@@ -26,4 +26,40 @@ export class EvidenceService {
     console.log(`[Evidence] Collected from ${provider}:`, evidence);
     return evidence;
   }
+
+  async getHistory(controlId: string) {
+      return this.prisma.evidence.findMany({
+          where: {
+              gaps: {
+                  some: {
+                      controlId: controlId
+                  }
+              }
+          },
+          include: {
+              gaps: true
+          },
+          orderBy: {
+              timestamp: 'desc'
+          },
+          take: 10 // Limit history to last 10 scans
+      });
+  }
+
+  async getEvidence(id: string) {
+      return this.prisma.evidence.findUnique({
+          where: { id },
+          include: {
+              gaps: {
+                  include: {
+                      control: {
+                          include: {
+                              standard: true
+                          }
+                      }
+                  }
+              }
+          }
+      });
+  }
 }

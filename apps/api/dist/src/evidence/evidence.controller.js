@@ -15,35 +15,35 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.EvidenceController = void 0;
 const common_1 = require("@nestjs/common");
 const evidence_service_1 = require("./evidence.service");
-const analysis_service_1 = require("../analysis/analysis.service");
 let EvidenceController = class EvidenceController {
     evidenceService;
-    analysisService;
-    constructor(evidenceService, analysisService) {
+    constructor(evidenceService) {
         this.evidenceService = evidenceService;
-        this.analysisService = analysisService;
     }
-    async runScan(provider = 'AWS') {
-        const evidence = await this.evidenceService.collectEvidence(provider);
-        const gap = await this.analysisService.analyzeEvidence(evidence);
-        return {
-            message: 'Scan completed',
-            evidence,
-            gap,
-        };
+    async getHistory(controlId) {
+        return this.evidenceService.getHistory(controlId);
+    }
+    async getEvidence(id) {
+        return this.evidenceService.getEvidence(id);
     }
 };
 exports.EvidenceController = EvidenceController;
 __decorate([
-    (0, common_1.Post)('scan'),
-    __param(0, (0, common_1.Body)('provider')),
+    (0, common_1.Get)('history/:controlId'),
+    __param(0, (0, common_1.Param)('controlId')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
-], EvidenceController.prototype, "runScan", null);
+], EvidenceController.prototype, "getHistory", null);
+__decorate([
+    (0, common_1.Get)(':id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], EvidenceController.prototype, "getEvidence", null);
 exports.EvidenceController = EvidenceController = __decorate([
     (0, common_1.Controller)('evidence'),
-    __metadata("design:paramtypes", [evidence_service_1.EvidenceService,
-        analysis_service_1.AnalysisService])
+    __metadata("design:paramtypes", [evidence_service_1.EvidenceService])
 ], EvidenceController);
 //# sourceMappingURL=evidence.controller.js.map

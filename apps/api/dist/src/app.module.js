@@ -8,6 +8,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
+const config_1 = require("@nestjs/config");
+const core_1 = require("@nestjs/core");
+const throttler_1 = require("@nestjs/throttler");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 const evidence_module_1 = require("./evidence/evidence.module");
@@ -15,14 +18,49 @@ const analysis_module_1 = require("./analysis/analysis.module");
 const task_module_1 = require("./task/task.module");
 const report_module_1 = require("./report/report.module");
 const prisma_module_1 = require("./prisma/prisma.module");
+const auth_module_1 = require("./auth/auth.module");
+const compliance_module_1 = require("./compliance/compliance.module");
+const cloud_module_1 = require("./cloud/cloud.module");
+const scanner_module_1 = require("./scanner/scanner.module");
+const policy_module_1 = require("./policy/policy.module");
+const asset_module_1 = require("./asset/asset.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
-        imports: [evidence_module_1.EvidenceModule, analysis_module_1.AnalysisModule, task_module_1.TaskModule, report_module_1.ReportModule, prisma_module_1.PrismaModule],
+        imports: [
+            config_1.ConfigModule.forRoot({
+                isGlobal: true,
+            }),
+            throttler_1.ThrottlerModule.forRoot([
+                {
+                    ttl: 60000,
+                    limit: 60,
+                },
+            ]),
+            evidence_module_1.EvidenceModule,
+            analysis_module_1.AnalysisModule,
+            task_module_1.TaskModule,
+            report_module_1.ReportModule,
+            prisma_module_1.PrismaModule,
+            auth_module_1.AuthModule,
+            prisma_module_1.PrismaModule,
+            auth_module_1.AuthModule,
+            compliance_module_1.ComplianceModule,
+            cloud_module_1.CloudModule,
+            scanner_module_1.ScannerModule,
+            policy_module_1.PolicyModule,
+            asset_module_1.AssetModule,
+        ],
         controllers: [app_controller_1.AppController],
-        providers: [app_service_1.AppService],
+        providers: [
+            app_service_1.AppService,
+            {
+                provide: core_1.APP_GUARD,
+                useClass: throttler_1.ThrottlerGuard,
+            },
+        ],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map

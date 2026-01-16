@@ -14,16 +14,17 @@ const MorphingShape = () => {
             // Both paths should ideally have similar number of points for smoothness, 
             // but for "Glitch" effect, mismatch is acceptable (visual artifacting looks "techy").
             
-            // Path 1: Smooth Shield (Security)
-            const shield = "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"; 
+            // Path 1: Smooth Shield (Security) - Polygonal approx for smooth morph
+            // M12 22 (Bottom) -> L20 13 (Right Curve) -> L20 5 (Top Right) -> L12 2 (Top Peak) -> L4 5 (Top Left) -> L4 13 (Left Curve)
+            const shield = "M12 22 L20 13 L20 5 L12 2 L4 5 L4 13 Z"; 
             
-            // Path 2: Sharp Cyber Star/Shard (Automation/Action) 
-            // 8-point distortion to make it look active
-            const shard = "M12 2L15 9L22 12L15 15L12 22L9 15L2 12L9 9Z";
+            // Path 2: Lightning Bolt (Automation/Action)
+            // Reordered to start from bottom to match Shield's start point
+            const lightning = "M11 22 L21 10 L12 10 L13 2 L3 14 L12 14 Z";
 
             gsap.to(pathRef.current, {
                 duration: 1.5,
-                attr: { d: shard }, 
+                attr: { d: lightning }, 
                 repeat: -1,
                 yoyo: true,
                 ease: "elastic.inOut(1, 0.75)", // Bouncy elastic effect
@@ -44,7 +45,7 @@ const MorphingShape = () => {
 
     return (
         <svg viewBox="0 0 24 24" className="w-8 h-8 text-primary fill-primary" style={{ overflow: 'visible' }}>
-            <path ref={pathRef} d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="none" />
+            <path ref={pathRef} d="M12 22 L20 13 L20 5 L12 2 L4 5 L4 13 Z" stroke="none" />
         </svg>
     );
 };

@@ -1,18 +1,17 @@
-import { Sidebar } from "./sidebar";
-import { Header } from "./header";
+import { Sidebar } from "@/components/layout/sidebar";
+import { cn } from "@/lib/utils";
 
-export function Shell({ children }: { children: React.ReactNode }) {
+interface ShellProps extends React.HTMLAttributes<HTMLDivElement> {}
+
+export function Shell({ children, className, ...props }: ShellProps) {
   return (
-    <div className="flex h-screen w-full bg-background text-foreground overflow-hidden">
+    <div className="flex min-h-screen bg-background text-foreground font-sans antialiased text-sm">
       <Sidebar />
-      <div className="flex flex-1 flex-col pl-64">
-        <Header />
-        <main className="flex-1 overflow-y-auto p-6 scroll-smooth">
-          <div className="mx-auto max-w-7xl animate-in fade-in duration-500">
+      <main className={cn("flex-1 overflow-y-auto p-8 md:p-12", className)} {...props}>
+        <div className="mx-auto max-w-6xl space-y-8">
             {children}
-          </div>
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   );
 }

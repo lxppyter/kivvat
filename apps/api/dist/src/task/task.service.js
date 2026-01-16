@@ -12,23 +12,64 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.TaskService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
-const client_1 = require("@prisma/client");
 let TaskService = class TaskService {
     prisma;
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async createRemediationTask(gap) {
-        const task = await this.prisma.task.create({
+    async create(dto) {
+        return this.prisma.task.create({
             data: {
-                title: `Fix Compliance Issue: ${gap.evidenceId}`,
-                description: `Gap detected: ${gap.details}. Please remediate immediately used standard control.`,
-                gapAnalysisId: gap.id,
-                status: client_1.TaskStatus.OPEN,
+                title: dto.title,
+                description: dto.description,
+                gapAnalysisId: dto.gapAnalysisId,
+                assigneeId: dto.assigneeId,
+                dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
             },
         });
-        console.log(`[Task] Remediation Task Created: ${task.id}`);
+    }
+    async createRemediationTask(gap) {
+        return this.prisma.task.create({
+            data: {
+                title: `Fix Compliance Issue: ${gap.evidenceId || gap.id}`,
+                description: `Automated remediation task for control ${gap.control?.code || 'Unknown'}. Detail: ${gap.details}`,
+                gapAnalysisId: gap.id,
+                status: 'OPEN',
+            },
+        });
+    }
+    async findAll() {
+        return this.prisma.task.findMany({
+            include: {
+                assignee: {
+                    select: { id: true, name: true, email: true },
+                },
+                gapAnalysis: {
+                    include: {
+                        control: true
+                    }
+                }
+            },
+            orderBy: { createdAt: 'desc' },
+        });
+    }
+    async findOne(id) {
+        const task = await this.prisma.task.findUnique({
+            where: { id },
+            include: { assignee: true, gapAnalysis: true },
+        });
+        if (!task)
+            throw new common_1.NotFoundException('Task not found');
         return task;
+    }
+    async update(id, dto) {
+        return this.prisma.task.update({
+            where: { id },
+            data: {
+                ...dto,
+                dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
+            },
+        });
     }
 };
 exports.TaskService = TaskService;
