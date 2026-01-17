@@ -104,8 +104,8 @@ Yüksek performanslı, "Type-Safe" monorepo mimarisi ile geliştirilmiştir:
    ```bash
    npm run dev
    ```
-   - Frontend: `http://localhost:3000`
-   - Backend: `http://localhost:3001`
+   - Frontend: `http://localhost:3001`
+   - Backend: `http://localhost:3000`
 
 ---
 
