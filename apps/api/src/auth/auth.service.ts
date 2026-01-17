@@ -21,7 +21,7 @@ export class AuthService {
         email: dto.email,
         password: hash,
         name: dto.name,
-        companyName: dto.companyName,
+        companyName: dto.company_name,
         subscription: {
             create: {
                 plan: 'COMPLIANCE CORE',
@@ -31,7 +31,7 @@ export class AuthService {
       },
     });
 
-    const tokens = await this.getTokens(user.id, user.email);
+    const tokens = await this.getTokens(user.id, user.email, user.role);
     await this.updateRefreshToken(user.id, tokens.refresh_token);
     return tokens;
   }
@@ -51,7 +51,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const tokens = await this.getTokens(user.id, user.email);
+    const tokens = await this.getTokens(user.id, user.email, user.role);
     await this.updateRefreshToken(user.id, tokens.refresh_token);
     return tokens;
   }
@@ -76,7 +76,7 @@ export class AuthService {
     );
     if (!refreshTokenMatches) throw new UnauthorizedException('Access Denied');
 
-    const tokens = await this.getTokens(user.id, user.email);
+    const tokens = await this.getTokens(user.id, user.email, user.role);
     await this.updateRefreshToken(user.id, tokens.refresh_token);
     return tokens;
   }
@@ -91,12 +91,13 @@ export class AuthService {
     });
   }
 
-  async getTokens(userId: string, email: string) {
+  async getTokens(userId: string, email: string, role: string) {
     const [at, rt] = await Promise.all([
       this.jwtService.signAsync(
         {
           sub: userId,
           email,
+          role,
         },
         {
           secret: this.configService.get<string>('JWT_SECRET'),
@@ -107,6 +108,7 @@ export class AuthService {
         {
           sub: userId,
           email,
+          role,
         },
         {
           secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
@@ -131,5 +133,20 @@ export class AuthService {
     // Return user without sensitive data
     const { password, hashedRefreshToken, ...result } = user;
     return result;
+  }
+  async updateProfile(userId: string, dto: { name?: string; password?: string }) {
+      const data: any = {};
+      if (dto.name) data.name = dto.name;
+      if (dto.password) {
+          data.password = await bcrypt.hash(dto.password, 10);
+      }
+
+      const user = await this.prisma.user.update({
+          where: { id: userId },
+          data,
+      });
+
+      const { password, hashedRefreshToken, ...result } = user;
+      return result;
   }
 }

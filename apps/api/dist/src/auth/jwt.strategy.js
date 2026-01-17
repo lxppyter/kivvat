@@ -13,21 +13,36 @@ exports.JwtStrategy = void 0;
 const passport_jwt_1 = require("passport-jwt");
 const passport_1 = require("@nestjs/passport");
 const common_1 = require("@nestjs/common");
+const prisma_service_1 = require("../prisma/prisma.service");
 let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(passport_jwt_1.Strategy) {
-    constructor() {
+    prisma;
+    constructor(prisma) {
         super({
             jwtFromRequest: passport_jwt_1.ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
             secretOrKey: process.env.JWT_SECRET || 'super-secret-key-change-me',
         });
+        this.prisma = prisma;
     }
     async validate(payload) {
-        return { userId: payload.sub, email: payload.email };
+        if (payload.role === 'AUDITOR' && payload.auditShareId) {
+            const share = await this.prisma.auditShare.findUnique({
+                where: { id: payload.auditShareId }
+            });
+            if (!share) {
+                throw new common_1.UnauthorizedException('Audit access has been revoked.');
+            }
+        }
+        return {
+            userId: payload.sub,
+            email: payload.email,
+            role: payload.role || 'STAFF',
+        };
     }
 };
 exports.JwtStrategy = JwtStrategy;
 exports.JwtStrategy = JwtStrategy = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
 ], JwtStrategy);
 //# sourceMappingURL=jwt.strategy.js.map

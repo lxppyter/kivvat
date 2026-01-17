@@ -24,33 +24,34 @@ model User {
   id        String   @id @default(uuid())
   email     String   @unique
   password          String
-  hashedRefreshToken String?
+  hashedRefreshToken String? @map("hashed_refresh_token")
   name              String?
-  companyName       String?
+  companyName       String?  @map("company_name")
   role      String   @default("STAFF") // ADMIN, AUDITOR, STAFF
   reports   ScanReport[]
   assets    Asset[]
   tasks     Task[]
   policyAssignments PolicyAssignment[]
+  auditShares AuditShare[]
   subscription Subscription?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt      @map("updated_at")
   
   @@map("users")
 }
 
 model Subscription {
   id        String   @id @default(uuid())
-  userId    String   @unique
+  userId    String   @unique @map("user_id")
   user      User     @relation(fields: [userId], references: [id])
   plan      String   @default("COMPLIANCE CORE") // COMPLIANCE CORE, TRUST ARCHITECT, TOTAL AUTHORITY, CERTIFICATION FAST-TRACK
   status    String   @default("ACTIVE") // ACTIVE, CANCELED, EXPIRED
   
-  startDate DateTime @default(now())
-  endDate   DateTime?
+  startDate DateTime @default(now()) @map("start_date")
+  endDate   DateTime? @map("end_date")
   
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt      @map("updated_at")
 
   @@map("subscriptions")
 }
@@ -64,10 +65,10 @@ model Asset {
   status    String?  // RUNNING, STOPPED, ACTIVE
   details   Json?    // Extra metadata (instance type, size, etc.)
   
-  userId    String
+  userId    String     @map("user_id")
   user      User     @relation(fields: [userId], references: [id])
   
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt @map("updated_at")
   
   @@map("assets")
 }
@@ -79,10 +80,10 @@ model ScanReport {
   status    String   // 'COMPLETED', 'FAILED'
   results   Json     // Stores the detailed ScanResult[] array
   
-  userId    String
+  userId    String     @map("user_id")
   user      User     @relation(fields: [userId], references: [id])
   
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@map("scan_reports")
 }
@@ -93,8 +94,8 @@ model ComplianceStandard {
   name        String    @unique
   description String?
   controls    Control[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt      @map("updated_at")
 
   @@map("compliance_standards")
 }
@@ -102,14 +103,14 @@ model ComplianceStandard {
 // e.g. "9.1 Access Control"
 model Control {
   id          String             @id @default(uuid())
-  standardId  String
+  standardId  String             @map("standard_id")
   code        String             // "9.1", "A.5.1"
   name        String
   description String?
   standard    ComplianceStandard @relation(fields: [standardId], references: [id])
   gaps        GapAnalysis[]
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
+  createdAt   DateTime           @default(now()) @map("created_at")
+  updatedAt   DateTime           @updatedAt      @map("updated_at")
 
   @@map("controls")
 }
@@ -118,10 +119,10 @@ model Control {
 model Evidence {
   id          String        @id @default(uuid())
   source      String        // "AWS", "Azure", "GCP"
-  resourceId  String?       // "s3-bucket-xyz"
-  checkName   String        // "S3 Public Access"
+  resourceId  String?       @map("resource_id") // "s3-bucket-xyz"
+  checkName   String        @map("check_name") // "S3 Public Access"
   result      Json          // Raw result data
-  screenshotPath String?       // Path to local file or S3 URL
+  screenshotPath String?    @map("screenshot_path")   // Path to local file or S3 URL
   timestamp   DateTime      @default(now())
   gaps        GapAnalysis[]
 
@@ -131,15 +132,15 @@ model Evidence {
 // Mapping of Evidence to a Control to determine status
 model GapAnalysis {
   id          String           @id @default(uuid())
-  controlId   String
-  evidenceId  String
+  controlId   String           @map("control_id")
+  evidenceId  String           @map("evidence_id")
   status      ComplianceStatus
   details     String?
   control     Control          @relation(fields: [controlId], references: [id])
   evidence    Evidence         @relation(fields: [evidenceId], references: [id])
   tasks       Task[]
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt      @map("updated_at")
 
   @@map("gap_analyses")
 }
@@ -149,14 +150,14 @@ model Task {
   id            String      @id @default(uuid())
   title         String
   description   String?
-  assigneeId    String?
-  gapAnalysisId String?
+  assigneeId    String?     @map("assignee_id")
+  gapAnalysisId String?     @map("gap_analysis_id")
   status        TaskStatus  @default(OPEN)
-  dueDate       DateTime?
+  dueDate       DateTime?   @map("due_date")
   assignee      User?       @relation(fields: [assigneeId], references: [id])
   gapAnalysis   GapAnalysis? @relation(fields: [gapAnalysisId], references: [id])
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt      @map("updated_at")
 
   @@map("tasks")
 }
@@ -166,21 +167,22 @@ model PolicyTemplate {
   name        String   
   content     String   @db.Text
   category    String   // "ISO 27001", "HR", "General"
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt      @map("updated_at")
   version     String   @default("1.0") 
   assignments PolicyAssignment[]
   history     PolicyVersion[]
+  shares      PolicyShare[]
 
   @@map("policy_templates")
 }
 
 model PolicyVersion {
   id          String         @id @default(uuid())
-  policyId    String
+  policyId    String         @map("policy_id")
   version     String         // e.g. "1.0", "1.1"
   content     String         @db.Text
-  createdAt   DateTime       @default(now())
+  createdAt   DateTime       @default(now()) @map("created_at")
   
   policy      PolicyTemplate @relation(fields: [policyId], references: [id])
 
@@ -189,17 +191,46 @@ model PolicyVersion {
 
 model PolicyAssignment {
   id          String        @id @default(uuid())
-  policyId    String
-  userId      String
+  policyId    String        @map("policy_id")
+  userId      String?       @map("user_id") // Made nullable for public signers
   status      String        @default("PENDING") // PENDING, SIGNED, OVERDUE
-  signedAt    DateTime?
+  signedAt    DateTime?     @map("signed_at")
+  signerName  String?       @map("signer_name") // For public signers
+  signerEmail String?       @map("signer_email") // For public signers
   
-  user        User          @relation(fields: [userId], references: [id])
+  user        User?         @relation(fields: [userId], references: [id])
   policy      PolicyTemplate @relation(fields: [policyId], references: [id])
   
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt      @map("updated_at")
 
-  @@unique([userId, policyId])
+  // Removed unique constraint to allow multiple public signers for same policy
+  // @@unique([userId, policyId]) 
   @@map("policy_assignments")
+}
+
+model PolicyShare {
+  id        String         @id @default(uuid())
+  token     String         @unique
+  policyId  String?        @map("policy_id")
+  policy    PolicyTemplate? @relation(fields: [policyId], references: [id])
+  expiresAt DateTime?      @map("expires_at")
+  createdAt DateTime       @default(now()) @map("created_at")
+  active    Boolean        @default(true)
+
+  @@map("policy_shares")
+}
+
+model AuditShare {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  name      String   // e.g. "External Audit 2025-Q1"
+  expiresAt DateTime @map("expires_at")
+  
+  userId    String     @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("audit_shares")
 }

@@ -64,7 +64,7 @@ let AuthService = class AuthService {
                 email: dto.email,
                 password: hash,
                 name: dto.name,
-                companyName: dto.companyName,
+                companyName: dto.company_name,
                 subscription: {
                     create: {
                         plan: 'COMPLIANCE CORE',
@@ -73,7 +73,7 @@ let AuthService = class AuthService {
                 }
             },
         });
-        const tokens = await this.getTokens(user.id, user.email);
+        const tokens = await this.getTokens(user.id, user.email, user.role);
         await this.updateRefreshToken(user.id, tokens.refresh_token);
         return tokens;
     }
@@ -88,7 +88,7 @@ let AuthService = class AuthService {
         if (!isPasswordValid) {
             throw new common_1.UnauthorizedException('Invalid credentials');
         }
-        const tokens = await this.getTokens(user.id, user.email);
+        const tokens = await this.getTokens(user.id, user.email, user.role);
         await this.updateRefreshToken(user.id, tokens.refresh_token);
         return tokens;
     }
@@ -107,7 +107,7 @@ let AuthService = class AuthService {
         const refreshTokenMatches = await bcrypt.compare(refreshToken, user.hashedRefreshToken);
         if (!refreshTokenMatches)
             throw new common_1.UnauthorizedException('Access Denied');
-        const tokens = await this.getTokens(user.id, user.email);
+        const tokens = await this.getTokens(user.id, user.email, user.role);
         await this.updateRefreshToken(user.id, tokens.refresh_token);
         return tokens;
     }
@@ -120,11 +120,12 @@ let AuthService = class AuthService {
             },
         });
     }
-    async getTokens(userId, email) {
+    async getTokens(userId, email, role) {
         const [at, rt] = await Promise.all([
             this.jwtService.signAsync({
                 sub: userId,
                 email,
+                role,
             }, {
                 secret: this.configService.get('JWT_SECRET'),
                 expiresIn: '15m',
@@ -132,6 +133,7 @@ let AuthService = class AuthService {
             this.jwtService.signAsync({
                 sub: userId,
                 email,
+                role,
             }, {
                 secret: this.configService.get('JWT_REFRESH_SECRET'),
                 expiresIn: '7d',
@@ -149,6 +151,20 @@ let AuthService = class AuthService {
         });
         if (!user)
             throw new common_1.ForbiddenException('User not found');
+        const { password, hashedRefreshToken, ...result } = user;
+        return result;
+    }
+    async updateProfile(userId, dto) {
+        const data = {};
+        if (dto.name)
+            data.name = dto.name;
+        if (dto.password) {
+            data.password = await bcrypt.hash(dto.password, 10);
+        }
+        const user = await this.prisma.user.update({
+            where: { id: userId },
+            data,
+        });
         const { password, hashedRefreshToken, ...result } = user;
         return result;
     }

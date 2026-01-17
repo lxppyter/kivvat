@@ -1,14 +1,53 @@
 import { Injectable } from '@nestjs/common';
 import { AwsScanner } from './aws.scanner';
+import { AzureScanner } from './azure.scanner';
+import { GcpScanner } from './gcp.scanner';
 import { CloudService } from '../cloud/cloud.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { TaskService } from '../task/task.service';
 import { ScanResult } from './scanner.interface';
 
+// ONE-TO-MANY MAPPING: A single technical rule maps to multiple compliance standards
+// Format: 'RULE-ID': ['ISO-CODE', 'SOC2-CODE', 'KVKK-CODE', 'PCI-CODE']
+export const RULE_TO_CONTROLS_MAP: Record<string, string[]> = {
+  // --- AWS ---
+  'AWS-IAM-ROOT-MFA':    ['A.9.4.2', 'CC6.1', 'TEKNIK.4', 'Req 8'],
+  'AWS-IAM-MFA':         ['A.9.4.2', 'CC6.1', 'TEKNIK.4', 'Req 8'],
+  'AWS-IAM-ROOT-KEYS':   ['A.9.2.3', 'CC6.1', 'TEKNIK.3'],
+  'AWS-S3-ENCRYPTION':   ['A.10.1.1', 'CC6.7', 'TEKNIK.11', 'Req 3'],
+  'AWS-S3-PUBLIC-BLOCK': ['A.13.1.1', 'CC6.6', 'TEKNIK.5', 'Req 1'],
+  'AWS-EC2-OPEN-SSH':    ['A.13.1.1', 'CC6.6', 'TEKNIK.5', 'Req 1'],
+  'AWS-EC2-OPEN-RDP':    ['A.13.1.1', 'CC6.6', 'TEKNIK.5', 'Req 1'],
+  'AWS-RDS-ENCRYPTION':  ['A.10.1.1', 'CC6.1', 'TEKNIK.11', 'Req 3'],
+  'AWS-CLOUDTRAIL':      ['A.12.4.1', 'CC7.2', 'TEKNIK.2', 'Req 10'],
+
+  // --- AZURE ---
+  'AZURE-STORAGE-SECURE-TRANSFER': ['A.10.1.1', 'CC6.7', 'TEKNIK.11'],
+  'AZURE-STORAGE-NO-PUBLIC':       ['A.13.1.1', 'CC6.6', 'TEKNIK.5'],
+  'AZURE-SQL-AUDITING':            ['A.12.4.1', 'CC7.2', 'TEKNIK.2'],
+  'AZURE-SQL-TDE':                 ['A.10.1.1', 'CC6.1', 'TEKNIK.11'],
+  'AZURE-SQL-FIREWALL':            ['A.13.1.1', 'CC6.6', 'TEKNIK.5'],
+  'AZURE-VM-NSG-SSH':              ['A.13.1.1', 'CC6.6', 'TEKNIK.5'],
+  'AZURE-VM-DISK-ENCRYPTION':      ['A.10.1.1', 'CC6.1', 'TEKNIK.11'],
+
+  // --- GCP ---
+  'GCP-STORAGE-PUBLIC-BLOCK':      ['A.13.1.1', 'CC6.6', 'TEKNIK.5'],
+  'GCP-COMPUTE-NO-PUBLIC-IP':      ['A.13.1.1', 'CC6.6', 'TEKNIK.5'],
+  'GCP-COMPUTE-SHIELDED':          ['A.12.1.2', 'CC6.8', 'TEKNIK.6'],
+  'GCP-SQL-SSL':                   ['A.10.1.1', 'CC6.7', 'TEKNIK.11'],
+  'GCP-IAM-NO-SERVICE-ACCOUNT-KEYS': ['A.9.2.3', 'CC6.1', 'TEKNIK.3'],
+
+  // --- ENDPOINT ---
+  'ENDPOINT-DISK-ENCRYPTION': ['A.10.1.1', 'CC6.1', 'TEKNIK.11'],
+  'ENDPOINT-ANTIVIRUS':       ['A.12.2.1', 'CC6.8', 'TEKNIK.6'],
+};
+
 @Injectable()
 export class ScannerService {
   constructor(
     private awsScanner: AwsScanner,
+    private azureScanner: AzureScanner,
+    private gcpScanner: GcpScanner,
     private prisma: PrismaService,
     private taskService: TaskService
   ) {}
@@ -22,23 +61,9 @@ export class ScannerService {
   }
 
   // --- Rule Mapping Logic ---
-  private getControlCode(ruleId: string): string | null {
-    const RULE_TO_CONTROL_MAP: Record<string, string> = {
-      // AWS IAM
-      'AWS-IAM-ROOT-MFA': 'A.9.1.1',
-      'AWS-IAM-ROOT-KEYS': 'A.9.4.1', 
-      'AWS-IAM-GHOST-USER': 'A.9.2.1',
-      // AWS S3
-      'AWS-S3-ENCRYPTION': 'A.10.1.1',
-      'AWS-S3-PUBLIC-BLOCK': 'A.13.1.1',
-      // AWS EC2
-      'AWS-EC2-OPEN-SSH': 'A.13.1.1',
-      'AWS-EC2-OPEN-RDP': 'A.13.1.1',
-      // ENDPOINT (Manual Verification)
-      'ENDPOINT-DISK-ENCRYPTION': 'A.10.1.1', // Cryptographic controls
-      'ENDPOINT-ANTIVIRUS': 'A.12.2.1',       // Malware protection
-    };
-    return RULE_TO_CONTROL_MAP[ruleId] || null;
+  private getControlCode(ruleId: string): string[] {
+    return RULE_TO_CONTROLS_MAP[ruleId] || [];
+
   }
 
   async runScan(provider: string, credentials: any, userId: string) {
@@ -49,6 +74,10 @@ export class ScannerService {
       // 1. Cloud Scan
       if (provider.toLowerCase() === 'aws') {
         results = await this.awsScanner.scan(credentials);
+      } else if (provider.toLowerCase() === 'azure') {
+        results = await this.azureScanner.scan(credentials);
+      } else if (provider.toLowerCase() === 'gcp') {
+        results = await this.gcpScanner.scan(credentials);
       }
 
       // 2. Manual Asset Verification (Endpoint Security)
@@ -91,41 +120,10 @@ export class ScannerService {
           }
       });
 
-      // AUTO-SEED: If user has no assets, create demo data for immediate value
+      // If user has no assets, return empty result (No auto-seed)
       if (assets.length === 0) {
-          console.log('User has no assets. Seeding demo data...');
-          await this.prisma.asset.createMany({
-            data: [
-                {
-                    userId,
-                    name: 'Demo-Laptop-Finans',
-                    type: 'WORKSTATION',
-                    provider: 'ENDPOINT',
-                    status: 'ACTIVE',
-                    details: { bitlocker: true, antivirus: false, serialNumber: 'DEMO-111' } // Risk: No AV
-                },
-                {
-                    userId,
-                    name: 'Demo-Server-DB',
-                    type: 'SERVER',
-                    provider: 'ON_PREM',
-                    status: 'ACTIVE',
-                    details: { bitlocker: false, antivirus: true, ip: '192.168.1.50' } // Risk: No Encryption
-                },
-                {
-                    userId,
-                    name: 'Demo-CEO-Macbook',
-                    type: 'WORKSTATION',
-                    provider: 'ENDPOINT',
-                    status: 'ACTIVE',
-                    details: { bitlocker: true, antivirus: true, serialNumber: 'DEMO-999' } // Safe
-                }
-            ]
-          });
-          // Re-fetch
-          assets = await this.prisma.asset.findMany({
-            where: { userId, provider: { in: ['ENDPOINT', 'ON_PREM'] } }
-          });
+          console.log('User has no manual assets. Skipping manual verification.');
+          return [];
       }
 
       for (const asset of assets) {
@@ -174,59 +172,70 @@ export class ScannerService {
   }
 
   private async processResults(results: ScanResult[]) {
-    // Cache default control to avoid repeated DB calls if no mapping found
-    const defaultControl = await this.prisma.control.findFirst();
-
+    // ONE-TO-MANY VALIDATION: Check each result against multiple standards
     for (const res of results) {
-        // 1. Find correct Control via Mapping
-        let targetControlId = defaultControl?.id;
-        const mappedCode = this.getControlCode(res.ruleId);
+        const mappedCodes = this.getControlCode(res.ruleId);
         
-        if (mappedCode) {
-            const output = await this.prisma.control.findFirst({
-                where: { code: mappedCode }
+        if (mappedCodes.length === 0) {
+            // Optional: Log unmapped rules
+            continue; 
+        }
+
+        // Iterate through all mapped standards (ISO, SOC, KVKK, PCI)
+        for (const code of mappedCodes) {
+            const control = await this.prisma.control.findFirst({
+                where: { code: code },
+                include: { standard: true } // FIX: Include relation for standard definition
             });
-            if (output) targetControlId = output.id;
-        }
 
-        if (!targetControlId) {
-            console.warn('No controls found in DB. Cannot link evidence.');
-            continue;
-        }
+            if (!control) {
+                console.warn(`Control code ${code} not found in DB.`);
+                continue;
+            }
 
-        // 2. Create Evidence
-        const evidence = await this.prisma.evidence.create({
-            data: {
-                source: 'Cloud-Guardian',
-                checkName: res.ruleId,
-                resourceId: res.resourceId,
-                result: res as any,
-                gaps: {
-                  create: {
-                        status: res.status === 'COMPLIANT' ? 'COMPLIANT' : 'NON_COMPLIANT',
-                        details: res.details,
-                        control: {
-                             connect: { id: targetControlId } 
-                        }
-                  }
+            // Create Evidence Linked to this specific Control
+            // This populates the Gap Analysis for THAT standard
+            const evidence = await this.prisma.evidence.create({
+                data: {
+                    source: 'Cloud-Guardian',
+                    checkName: `${res.ruleId} (${res.resourceId})`,
+                    resourceId: res.resourceId,
+                    result: res as any,
+                    gaps: {
+                      create: {
+                            status: res.status === 'COMPLIANT' ? 'COMPLIANT' : 'NON_COMPLIANT',
+                            details: res.details,
+                            control: {
+                                 connect: { id: control.id } 
+                            }
+                      }
+                    }
+                },
+                include: { gaps: true }
+            });
+
+            // Create Task ONLY if Non-Compliant
+            if (res.status === 'NON_COMPLIANT' && evidence.gaps && evidence.gaps.length > 0) {
+                const gap = evidence.gaps[0];
+                const severityPrefix = res.severity ? `[${res.severity}] ` : '';
+                
+                // Avoid Duplicate Tasks (Check if open task exists for this gap)
+                // FIX: Use 'CLOSED' instead of 'COMPLETED' based on Schema
+                const existingTask = await this.prisma.task.findFirst({
+                    where: { gapAnalysisId: gap.id, status: { not: 'CLOSED' } } 
+                });
+
+                if (!existingTask) {
+                    await this.prisma.task.create({
+                      data: {
+                        title: `${severityPrefix}Düzelt: ${res.ruleId}`,
+                        description: `Gereken İyileştirme: ${control.code} (${control.standard?.name || 'Standart'}) uyumluluğu için aksiyon alınmalı.\n\nTespit: ${res.details}`,
+                        gapAnalysisId: gap.id,
+                        status: 'OPEN',
+                      },
+                    });
                 }
-            },
-            include: { gaps: true }
-        });
-
-        // 3. Create Task if Non-Compliant
-        if (res.status === 'NON_COMPLIANT' && evidence.gaps && evidence.gaps.length > 0) {
-            const gap = evidence.gaps[0];
-            const severityPrefix = res.severity ? `[${res.severity}] ` : '';
-            
-            await this.prisma.task.create({
-              data: {
-                title: `${severityPrefix}Fix ${res.ruleId}`,
-                description: `Automated remediation task for control ${mappedCode || 'Unknown'}. Detail: ${res.details}. Resource: ${res.resourceId || 'N/A'}`,
-                gapAnalysisId: gap.id,
-                status: 'OPEN',
-              },
-            });
+            }
         }
     }
   }

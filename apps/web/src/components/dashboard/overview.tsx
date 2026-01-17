@@ -2,13 +2,22 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, AlertTriangle, CheckCircle2, Activity, Play, Loader2, AlertCircle } from "lucide-react";
-import api, { scanner } from "@/lib/api";
+import { ShieldCheck, AlertTriangle, CheckCircle2, Activity, Play, Loader2, AlertCircle, FileText, Package } from "lucide-react";
+import api, { scanner, reports } from "@/lib/api";
 import { useEffect, useState } from "react";
 
-export default function DashboardOverview() {
+import Cookies from "js-cookie";
+
+import { ScanDialog } from "./scan-dialog";
+
+export default function DashboardOverview({ items, loading: pLoading }: { items: any[], loading: boolean }) {
   const [loading, setLoading] = useState(false);
-  const [downloading, setDownloading] = useState(false);
+  const [isAuditor, setIsAuditor] = useState(false);
+  const [scanDialogOpen, setScanDialogOpen] = useState(false);
+
+  useEffect(() => {
+    setIsAuditor(Cookies.get("user_role") === "AUDITOR");
+  }, []);
   // Real data state
   const [stats, setStats] = useState([
       { title: "Risk Score", value: "A+", subtext: "Excellent Standing", trend: "stable", icon: ShieldCheck },
@@ -58,56 +67,46 @@ export default function DashboardOverview() {
     }
   };
 
-  const handleDownload = async (id: string) => {
-      // In a real app we'd get the ID from the selected report. For now using 'latest' stub.
-      setDownloading(true);
-      try {
-          // 'latest' keyword is now handled by backend 
-          const res = await api.get(`/reports/latest/pdf`, { responseType: 'blob' }); 
-          // Create blob link to download
-          const url = window.URL.createObjectURL(new Blob([res.data]));
-          const link = document.createElement('a');
-          link.href = url;
-          link.setAttribute('download', 'kivvat_report.pdf');
-          document.body.appendChild(link);
-          link.click();
-          link.remove();
-      } catch (e) {
-          console.error("Download failed", e);
-          alert("Rapor indirilemedi.");
-      } finally {
-          setDownloading(false);
-      }
+
+  // Open Dialog instead of direct scan
+  const openScanDialog = () => {
+    setScanDialogOpen(true);
   };
 
-  const runScan = async () => {
+  const handleScanStart = async (selectedProviders: string[]) => {
       setLoading(true);
+      setScanDialogOpen(false); // Close dialog
+
       try {
-          // Retrieve credentials from storage
-          const storedCreds = localStorage.getItem('aws_credentials');
-          let provider = 'aws';
-          let credentials = {};
-
-          if (!storedCreds) {
-              // If no AWS creds, we fallback to LOCAL/DEMO scan for Manual Assets
-              const confirmLocal = confirm("AWS bilgileri bulunamadı. Sadece 'Manuel Varlıklar' (Laptop, Sunucu vb.) üzerinde güvenlik taraması yapılsın mı?");
-              if (!confirmLocal) {
-                  setLoading(false);
-                  return;
-              }
-              provider = 'demo'; // This tells backend to skip AWS scan but run Manual verify
-          } else {
-              credentials = JSON.parse(storedCreds);
-          }
+          // Iterate through selected providers and run scan for each
+          // Note: Backend currently accepts one provider at a time in /scanner/run, 
+          // or we can update backend to accept array. 
+          // For now, let's just pick the first one or run sequentially.
+          // Better approach: Run sequentially for now to support the 'demo' / 'manual' logic
           
-          // Call Real Scanner API
-          const response = await api.post('/scanner/run', { 
-              provider, 
-              credentials 
-          });
+          for (const providerId of selectedProviders) {
+              let credentials = {};
+              if (providerId === 'aws') credentials = JSON.parse(localStorage.getItem('aws_credentials') || '{}');
+              if (providerId === 'azure') credentials = JSON.parse(localStorage.getItem('azure_credentials') || '{}');
+              if (providerId === 'gcp') credentials = JSON.parse(localStorage.getItem('gcp_credentials') || '{}');
+              
+              // Provider ID 'demo' maps to 'demo' in backend (which triggers manual/local verify only)
+              // Actually 'demo' in backend was for AWS mock. 
+              // We need to ensuring backend handles 'demo' or 'manual' correctly.
+              // In ScannerService.runScan: 
+              // if provider == 'aws'/'azure'/'gcp' -> cloud scan
+              // ALWAYS runs verifyManualAssets.
+              
+              // So if we send 'manual', it skips cloud scan and does manual verify.
+              const apiProvider = providerId === 'demo' ? 'manual' : providerId;
 
-          const results = response.data;
-          // Refresh dashboard data via standard fetch to ensure consistency
+              await api.post('/scanner/run', { 
+                  provider: apiProvider, 
+                  credentials 
+              });
+          }
+
+          // Refresh dashboard data
           fetchLatestReport();
 
       } catch (error) {
@@ -120,6 +119,13 @@ export default function DashboardOverview() {
 
   return (
     <div className="space-y-8">
+      <ScanDialog 
+        open={scanDialogOpen} 
+        onOpenChange={setScanDialogOpen} 
+        onScan={handleScanStart}
+        loading={loading}
+      />
+
       {/* Header & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-8">
         <div className="flex flex-col gap-1">
@@ -129,13 +135,9 @@ export default function DashboardOverview() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-            <Button variant="outline" onClick={() => handleDownload('latest')} disabled={downloading} className="h-10 border border-border bg-background text-foreground font-mono text-xs font-semibold tracking-wide hover:bg-muted rounded-lg shadow-sm">
-                {downloading ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : null}
-                {downloading ? "İndiriliyor..." : "Rapor İndir"}
-            </Button>
-            <Button onClick={runScan} disabled={loading} className="h-10 bg-primary text-primary-foreground font-mono text-xs font-semibold tracking-wide hover:bg-primary/90 rounded-lg shadow-sm">
+            <Button onClick={openScanDialog} disabled={loading} className="h-10 bg-primary text-primary-foreground font-mono text-xs font-semibold tracking-wide hover:bg-primary/90 rounded-lg shadow-sm">
                 {loading ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Play className="mr-2 h-3.5 w-3.5" />}
-                {loading ? "Taranıyor..." : "Taramayı Başlat"}
+                {loading ? "TARANIYOR..." : "TARAMAYI BAŞLAT"}
             </Button>
         </div>
       </div>

@@ -34,6 +34,25 @@ let AssetService = class AssetService {
             }
         });
     }
+    async createMany(userId, data) {
+        return this.prisma.asset.createMany({
+            data: data.map(item => ({
+                ...item,
+                userId
+            }))
+        });
+    }
+    async update(id, data) {
+        return this.prisma.asset.update({
+            where: { id },
+            data
+        });
+    }
+    async remove(id) {
+        return this.prisma.asset.delete({
+            where: { id }
+        });
+    }
 };
 exports.AssetService = AssetService;
 exports.AssetService = AssetService = __decorate([

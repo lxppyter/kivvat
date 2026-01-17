@@ -1,7 +1,8 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Req, Get } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Req, Get, Patch } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { Throttle } from '@nestjs/throttler';
 
@@ -27,6 +28,13 @@ export class AuthController {
   getProfile(@Req() req: any) {
     const user = req.user;
     return this.authService.getProfile(user['userId']);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('me')
+  updateProfile(@Req() req: any, @Body() dto: UpdateProfileDto) {
+    const user = req.user;
+    return this.authService.updateProfile(user['userId'], dto);
   }
 
   @UseGuards(AuthGuard('jwt'))

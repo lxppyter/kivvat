@@ -60,26 +60,7 @@ async function main() {
           description: c.desc,
         },
       });
-
-      // Random status for demo
-      const statuses = [ComplianceStatus.COMPLIANT, ComplianceStatus.NON_COMPLIANT, ComplianceStatus.PENDING];
-      // Weighted random to make it look realistic (mostly pending or compliant)
-      const complianceStatus = Math.random() > 0.6 ? ComplianceStatus.COMPLIANT : (Math.random() > 0.3 ? ComplianceStatus.NON_COMPLIANT : ComplianceStatus.PENDING);
-
-      await prisma.evidence.create({
-        data: {
-          source: 'Rule Engine',
-          checkName: `Automated Check for ${c.code}`,
-          result: { passed: complianceStatus === ComplianceStatus.COMPLIANT },
-          gaps: {
-            create: {
-              controlId: control.id,
-              status: complianceStatus,
-              details: 'Rule-based assessment result (Demo Data)',
-            },
-          },
-        },
-      });
+      // Mock Evidence generation removed for Production
     }
   };
 
@@ -349,9 +330,6 @@ async function main() {
 
   // 5. Policy Templates (Dynamic Document Library)
   console.log('Seeding Policy Templates...');
-  await prisma.policyAssignment.deleteMany({});
-  await prisma.policyTemplate.deleteMany({}); // Cleanup
-
   const templates = [
       { name: 'Acceptable Use Policy', category: 'General', content: '# Acceptable Use Policy\n\n## 1. Introduction\nThis policy outlines the acceptable use of computer equipment at {{companyName}}.\n\n## 2. Scope\nAll employees...' },
       { name: 'Information Security Policy', category: 'ISO 27001', content: '# Information Security Policy\n\n## Purpose\nThe purpose of this policy is to protect the information assets of {{companyName}}...' },
@@ -367,96 +345,25 @@ async function main() {
       { name: 'Mobile Device Policy', category: 'General', content: '# Mobile Device Policy\n\n## BYOD\nPersonal devices used for work must be encrypted and password protected...' }
   ];
 
-  const createdTemplates = [];
   for (const t of templates) {
-      const tmpl = await prisma.policyTemplate.create({ data: t });
-      createdTemplates.push(tmpl);
+      await prisma.policyTemplate.create({
+          data: { name: t.name, category: t.category, content: t.content }
+      });
   }
 
-  // 6. Demo Team Members
-  console.log('Seeding Demo Team Members & Assignments...');
-  const demoUsers = [
-      { email: 'user1@demo.com', name: 'Ahmet Yılmaz', role: 'MEMBER' },
-      { email: 'user2@demo.com', name: 'Ayşe Demir', role: 'MEMBER' },
-      { email: 'user3@demo.com', name: 'Mehmet Öz', role: 'MEMBER' },
-      { email: 'user4@demo.com', name: 'Canan Can', role: 'MEMBER' }, 
-  ];
-
-  for (const u of demoUsers) {
-      const user = await prisma.user.upsert({
-          where: { email: u.email },
-          update: {},
-          create: {
-              email: u.email,
-              name: u.name,
-              password: 'hashedpassword123',
-              role: 'STAFF',
-          }
-      });
-      
-      // Assign random policies
-      for (const tmpl of createdTemplates) {
-          // 80% chance to be assigned
-          if (Math.random() > 0.2) {
-              const statusRandom = Math.random();
-              let status = 'PENDING';
-              let signedAt = null;
-
-              if (statusRandom > 0.4) {
-                  status = 'SIGNED';
-                  signedAt = new Date();
-              } else if (statusRandom < 0.1) {
-                   status = 'OVERDUE';
-              }
-
-              await prisma.policyAssignment.create({
-                  data: {
-                      userId: user.id,
-                      policyId: tmpl.id,
-                      status: status,
-                      signedAt: signedAt
-                  }
-              });
-          }
+  // 6. Admin User (Initial Access)
+  console.log('Seeding Admin User...');
+  const adminEmail = 'admin@kivvat.com';
+  await prisma.user.upsert({
+      where: { email: adminEmail },
+      update: {},
+      create: {
+          email: adminEmail,
+          name: 'System Administrator',
+          password: 'adminPassword123!', // Should be changed on first login
+          role: 'ADMIN',
       }
-  }
-
-  // 7. Demo Assets
-  console.log('Seeding Demo Assets...');
-  const assetUser = await prisma.user.findUnique({ where: { email: 'user1@demo.com' } });
-  if (assetUser) {
-      await prisma.asset.createMany({
-          data: [
-              {
-                  userId: assetUser.id,
-                  name: 'HQ-Firewall-Primary',
-                  type: 'NETWORK_DEVICE',
-                  provider: 'ON_PREM',
-                  status: 'ACTIVE',
-                  region: 'Istanbul_HQ',
-                  details: { ip: '192.168.1.1', firmware: 'v12.4.1', maintenance: '2025-01-01' }
-              },
-              {
-                  userId: assetUser.id,
-                  name: 'Ahmet-Laptop',
-                  type: 'WORKSTATION',
-                  provider: 'ENDPOINT',
-                  status: 'ACTIVE',
-                  region: 'Remote',
-                  details: { os: 'Windows 11', bitlocker: true, antivirus: 'Defender', lastScan: new Date() }
-              },
-              {
-                  userId: assetUser.id,
-                  name: 'Finance-Server-01',
-                  type: 'SERVER',
-                  provider: 'ON_PREM',
-                  status: 'RUNNING',
-                  region: 'Ankara_DC',
-                  details: { os: 'Ubuntu 22.04', role: 'Database', backup: true }
-              }
-          ]
-      });
-  }
+  });
 
   console.log('Seeding finished.');
 }

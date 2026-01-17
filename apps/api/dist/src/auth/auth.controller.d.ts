@@ -1,6 +1,7 @@
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 export declare class AuthController {
     private readonly authService;
     constructor(authService: AuthService);
@@ -23,6 +24,15 @@ export declare class AuthController {
             startDate: Date;
             endDate: Date | null;
         } | null;
+        id: string;
+        name: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        email: string;
+        companyName: string | null;
+        role: string;
+    }>;
+    updateProfile(req: any, dto: UpdateProfileDto): Promise<{
         id: string;
         name: string | null;
         createdAt: Date;

@@ -13,8 +13,8 @@ export declare class EvidenceController {
             evidenceId: string;
         }[];
     } & {
-        result: import("@prisma/client/runtime/client").JsonValue;
         id: string;
+        result: import("@prisma/client/runtime/client").JsonValue;
         source: string;
         resourceId: string | null;
         checkName: string;
@@ -33,12 +33,12 @@ export declare class EvidenceController {
                 };
             } & {
                 id: string;
-                standardId: string;
-                code: string;
                 name: string;
                 description: string | null;
                 createdAt: Date;
                 updatedAt: Date;
+                standardId: string;
+                code: string;
             };
         } & {
             id: string;
@@ -50,8 +50,8 @@ export declare class EvidenceController {
             evidenceId: string;
         })[];
     } & {
-        result: import("@prisma/client/runtime/client").JsonValue;
         id: string;
+        result: import("@prisma/client/runtime/client").JsonValue;
         source: string;
         resourceId: string | null;
         checkName: string;

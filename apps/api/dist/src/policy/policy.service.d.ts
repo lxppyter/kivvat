@@ -16,7 +16,7 @@ export declare class PolicyService {
             user: {
                 name: string | null;
                 email: string;
-            };
+            } | null;
             policy: {
                 name: string;
                 category: string;
@@ -26,9 +26,11 @@ export declare class PolicyService {
             createdAt: Date;
             updatedAt: Date;
             status: string;
-            signedAt: Date | null;
+            userId: string | null;
             policyId: string;
-            userId: string;
+            signedAt: Date | null;
+            signerName: string | null;
+            signerEmail: string | null;
         })[];
         stats: {
             total: number;
@@ -43,9 +45,11 @@ export declare class PolicyService {
         createdAt: Date;
         updatedAt: Date;
         status: string;
-        signedAt: Date | null;
+        userId: string | null;
         policyId: string;
-        userId: string;
+        signedAt: Date | null;
+        signerName: string | null;
+        signerEmail: string | null;
     }>;
     updatePolicy(id: string, newContent: string): Promise<{
         id: string;
@@ -66,5 +70,63 @@ export declare class PolicyService {
     downloadTemplate(templateId: string, companyName: string): Promise<{
         name: string;
         content: string;
+    }>;
+    createShareLink(policyId?: string, expiresAt?: Date | string): Promise<{
+        token: string;
+        url: string;
+    }>;
+    getPublicPolicy(token: string): Promise<{
+        type: string;
+        policies: {
+            id: string;
+            name: string;
+            content: string;
+            category: string;
+            version: string;
+        }[];
+        policy?: undefined;
+    } | {
+        type: string;
+        policy: {
+            id: string;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            content: string;
+            category: string;
+            version: string;
+        } | null;
+        policies?: undefined;
+    }>;
+    signPublicPolicy(token: string, signerName: string, signerEmail: string, policyId?: string): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: string;
+        userId: string | null;
+        policyId: string;
+        signedAt: Date | null;
+        signerName: string | null;
+        signerEmail: string | null;
+    }>;
+    getShares(): Promise<({
+        policy: {
+            name: string;
+        } | null;
+    } & {
+        id: string;
+        createdAt: Date;
+        token: string;
+        expiresAt: Date | null;
+        policyId: string | null;
+        active: boolean;
+    })[]>;
+    revokeShare(id: string): Promise<{
+        id: string;
+        createdAt: Date;
+        token: string;
+        expiresAt: Date | null;
+        policyId: string | null;
+        active: boolean;
     }>;
 }

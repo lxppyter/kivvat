@@ -2,6 +2,11 @@
 
 Bu dosya Kivvat projesinin anlık durumunu, tamamlanan özellikleri ve yapılması gereken eksikleri içerir. Son teknik denetim (Audit) sonuçlarına göre güncellenmiştir.
 
+### ✅ Tamamlanan Temel Yapıtaşları
+- [x] Monorepo Kurulumu (NestJS + Next.js).
+- [x] Cyber-Aesthetic Tasarım Dili.
+- [x] Landing Page.
+
 ## 🔐 Kimlik Doğrulama (Authentication)
 - [x] **Kayıt Ol (Register):** Validasyonlu, güvenli kayıt akışı.
 - [x] **Giriş Yap (Login):** JWT tabanlı, Argon2/Bcrypt korumalı giriş.
@@ -24,10 +29,16 @@ Bu dosya Kivvat projesinin anlık durumunu, tamamlanan özellikleri ve yapılmas
     - [x] **Storage:** S3 Encryption, Public Access Block.
     - [x] **Network:** Security Groups (Port 22/3389 0.0.0.0/0 kontrolü).
     - [x] **Risk Scoring:** Kritik/Yüksek/Orta seviye risk analizi.
-- [ ] **Multi-Cloud Support:**
+- [x] **Multi-Cloud Support:**
     - [x] AWS Entegrasyonu.
-    - [ ] Azure Entegrasyonu (Stub mevcut).
-    - [ ] GCP Entegrasyonu (Stub mevcut).
+    - [x] Azure Entegrasyonu.
+        - **Dependencies**: `@azure/identity`, `@azure/arm-subscriptions`.
+        - **Auth**: Service Principal (Client ID, Secret, Tenant).
+        - **Verification**: List Subscriptions to verify access.
+    - [x] GCP Entegrasyonu.
+        - **Dependencies**: `@google-cloud/resource-manager`.
+        - **Auth**: Service Account JSON Key.
+        - **Verification**: `ProjectsClient.getProject`.
 
 ## 📸 Evidence-Auto (Otomatik Kanıt)
 - [x] **Timestamped Evidence:** Kanıtların zaman damgasıyla DB'ye kaydı.
@@ -39,10 +50,10 @@ Bu dosya Kivvat projesinin anlık durumunu, tamamlanan özellikleri ve yapılmas
 
 ## 📦 Asset-Intel (Varlık Yönetimi)
 - [x] **Cloud Inventory:** AWS (EC2, S3, IAM) kaynaklarının otomatik keşfi.
-- [ ] **Detailed Asset Mgmt:**
-    - [ ] **Hardware Inventory:** Fiziksel cihaz ekleme/düzenleme (Manuel).
-    - [ ] **Software Registry:** Lisans takibi ve bitiş süresi uyarıları.
-    - [ ] **Endpoint Security:** Laptop/PC disk şifreleme kontrolü (Agent/Checklist).
+- [x] **Detailed Asset Mgmt:**
+    - [x] **Hardware Inventory:** Fiziksel cihaz ekleme/düzenleme (Manuel).
+    - [x] **Software Registry:** Lisans takibi ve bitiş süresi uyarıları.
+    - [x] **Endpoint Security:** Laptop/PC disk şifreleme kontrolü (Agent/Checklist).
 
 ## 📜 Policy-Forge (Mevzuat Kütüphanesi)
 - [x] **Hazır Şablonlar:** Dinamik değişkenli ({{companyName}}) ISO/SOC2 şablonları.
@@ -50,14 +61,17 @@ Bu dosya Kivvat projesinin anlık durumunu, tamamlanan özellikleri ve yapılmas
 - [x] **Gap Analysis:** Standart bazında eksiklik analizi dashboardu.
 
 ## 💼 Auditor-X (Denetçi Portalı)
-- [ ] **Safe-Link Access:** Denetçiler için sadece okuma yetkili, süreli paylaşım linki.
-- [ ] **One-Click Export:**
+- [x] **Safe-Link Access:** Denetçiler için sadece okuma yetkili, süreli paylaşım linki.
+- [x] **One-Click Export:**
     - [x] Tüm uyumluluk durumunun tek PDF/Excel paketi olarak ihracı.
-    - [ ] Denetçi dostu klasör yapısında çıktı (Zip).
+    - [x] Denetçi dostu klasör yapısında çıktı (Zip).
+    - [ ] **Incident Response Log:** Güvenlik ihlallerinin tespit, müdahale ve kapanış kayıtları.
 
----
-
-### ✅ Tamamlanan Temel Yapıtaşları
-- [x] Monorepo Kurulumu (NestJS + Next.js).
-- [x] Cyber-Aesthetic Tasarım Dili.
-- [x] Landing Page.
+## 🚀 Gelecek Planları (Upcoming)
+- [ ] **SSL/TLS Certificate Monitor:** Load Balancer ve Endpoint sertifikalarının süre kontrolü.
+- [ ] **Remediation Guidance:** Zafiyetler için adım adım iyileştirme rehberleri.
+- [ ] **Configuration Drift:** Yapılandırma değişikliklerinin (Diff) analizi.
+- [ ] **Tedarikçi (Vendor) Risk Yönetimi:** 3. taraf yazılımların sertifika/güvenlik takibi.
+- [ ] **Ödeme Altyapısı (Payment Infrastructure):** Stripe/Iyzico entegrasyonu ve abonelik yönetimi.
+- [ ] **Landing Page UI & İçerik İyileştirmeleri:** Tasarımın cilalanması ve pazarlama metinlerinin güçlendirilmesi.
+- [ ] **Sistem Güvenlik İyileştirmeleri:** OWASP Top 10 zafiyetlerine (Injection, Broken Auth vb.) göre sistemin güçlendirilmesi.

@@ -16,4 +16,15 @@ export class ReportController {
       res.status(500).send('Report generation failed');
     }
   }
+
+  @Get(':id/zip')
+  async downloadZipBundle(@Param('id') id: string, @Res() res: Response) {
+    try {
+      const filePath = await this.reportService.generateExportBundle(id);
+      res.download(filePath, `kivvat-audit-bundle-${id}.zip`);
+    } catch (e) {
+      console.error('Zip Generation Failed', e);
+      res.status(500).send('Bundle generation failed');
+    }
+  }
 }

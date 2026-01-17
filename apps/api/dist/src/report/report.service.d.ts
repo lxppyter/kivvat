@@ -8,5 +8,6 @@ export declare class ReportService implements OnModuleInit {
     onModuleInit(): Promise<void>;
     generateEvidenceScreenshot(evidence: any): Promise<string>;
     generateFullPdfReport(reportId: string): Promise<string>;
+    generateExportBundle(reportId: string): Promise<string>;
     onApplicationShutdown(): Promise<void>;
 }

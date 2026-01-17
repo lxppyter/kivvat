@@ -52,22 +52,6 @@ async function main() {
                     description: c.desc,
                 },
             });
-            const statuses = [client_1.ComplianceStatus.COMPLIANT, client_1.ComplianceStatus.NON_COMPLIANT, client_1.ComplianceStatus.PENDING];
-            const complianceStatus = Math.random() > 0.6 ? client_1.ComplianceStatus.COMPLIANT : (Math.random() > 0.3 ? client_1.ComplianceStatus.NON_COMPLIANT : client_1.ComplianceStatus.PENDING);
-            await prisma.evidence.create({
-                data: {
-                    source: 'Rule Engine',
-                    checkName: `Automated Check for ${c.code}`,
-                    result: { passed: complianceStatus === client_1.ComplianceStatus.COMPLIANT },
-                    gaps: {
-                        create: {
-                            controlId: control.id,
-                            status: complianceStatus,
-                            details: 'Rule-based assessment result (Demo Data)',
-                        },
-                    },
-                },
-            });
         }
     };
     await createStandard('KVKK', 'Kişisel Verilerin Korunması Kanunu', [
@@ -276,8 +260,6 @@ async function main() {
         { code: 'Req 11', name: 'Vulnerability Management', desc: 'Test security of systems and networks regularly' },
     ]);
     console.log('Seeding Policy Templates...');
-    await prisma.policyAssignment.deleteMany({});
-    await prisma.policyTemplate.deleteMany({});
     const templates = [
         { name: 'Acceptable Use Policy', category: 'General', content: '# Acceptable Use Policy\n\n## 1. Introduction\nThis policy outlines the acceptable use of computer equipment at {{companyName}}.\n\n## 2. Scope\nAll employees...' },
         { name: 'Information Security Policy', category: 'ISO 27001', content: '# Information Security Policy\n\n## Purpose\nThe purpose of this policy is to protect the information assets of {{companyName}}...' },
@@ -292,87 +274,23 @@ async function main() {
         { name: 'Social Media Policy', category: 'HR', content: '# Social Media Policy\n\n## Conduct\nEmployees must distinguish between personal and professional communications...' },
         { name: 'Mobile Device Policy', category: 'General', content: '# Mobile Device Policy\n\n## BYOD\nPersonal devices used for work must be encrypted and password protected...' }
     ];
-    const createdTemplates = [];
     for (const t of templates) {
-        const tmpl = await prisma.policyTemplate.create({ data: t });
-        createdTemplates.push(tmpl);
-    }
-    console.log('Seeding Demo Team Members & Assignments...');
-    const demoUsers = [
-        { email: 'user1@demo.com', name: 'Ahmet Yılmaz', role: 'MEMBER' },
-        { email: 'user2@demo.com', name: 'Ayşe Demir', role: 'MEMBER' },
-        { email: 'user3@demo.com', name: 'Mehmet Öz', role: 'MEMBER' },
-        { email: 'user4@demo.com', name: 'Canan Can', role: 'MEMBER' },
-    ];
-    for (const u of demoUsers) {
-        const user = await prisma.user.upsert({
-            where: { email: u.email },
-            update: {},
-            create: {
-                email: u.email,
-                name: u.name,
-                password: 'hashedpassword123',
-                role: 'STAFF',
-            }
+        await prisma.policyTemplate.create({
+            data: { name: t.name, category: t.category, content: t.content }
         });
-        for (const tmpl of createdTemplates) {
-            if (Math.random() > 0.2) {
-                const statusRandom = Math.random();
-                let status = 'PENDING';
-                let signedAt = null;
-                if (statusRandom > 0.4) {
-                    status = 'SIGNED';
-                    signedAt = new Date();
-                }
-                else if (statusRandom < 0.1) {
-                    status = 'OVERDUE';
-                }
-                await prisma.policyAssignment.create({
-                    data: {
-                        userId: user.id,
-                        policyId: tmpl.id,
-                        status: status,
-                        signedAt: signedAt
-                    }
-                });
-            }
+    }
+    console.log('Seeding Admin User...');
+    const adminEmail = 'admin@kivvat.com';
+    await prisma.user.upsert({
+        where: { email: adminEmail },
+        update: {},
+        create: {
+            email: adminEmail,
+            name: 'System Administrator',
+            password: 'adminPassword123!',
+            role: 'ADMIN',
         }
-    }
-    console.log('Seeding Demo Assets...');
-    const assetUser = await prisma.user.findUnique({ where: { email: 'user1@demo.com' } });
-    if (assetUser) {
-        await prisma.asset.createMany({
-            data: [
-                {
-                    userId: assetUser.id,
-                    name: 'HQ-Firewall-Primary',
-                    type: 'NETWORK_DEVICE',
-                    provider: 'ON_PREM',
-                    status: 'ACTIVE',
-                    region: 'Istanbul_HQ',
-                    details: { ip: '192.168.1.1', firmware: 'v12.4.1', maintenance: '2025-01-01' }
-                },
-                {
-                    userId: assetUser.id,
-                    name: 'Ahmet-Laptop',
-                    type: 'WORKSTATION',
-                    provider: 'ENDPOINT',
-                    status: 'ACTIVE',
-                    region: 'Remote',
-                    details: { os: 'Windows 11', bitlocker: true, antivirus: 'Defender', lastScan: new Date() }
-                },
-                {
-                    userId: assetUser.id,
-                    name: 'Finance-Server-01',
-                    type: 'SERVER',
-                    provider: 'ON_PREM',
-                    status: 'RUNNING',
-                    region: 'Ankara_DC',
-                    details: { os: 'Ubuntu 22.04', role: 'Database', backup: true }
-                }
-            ]
-        });
-    }
+    });
     console.log('Seeding finished.');
 }
 main()

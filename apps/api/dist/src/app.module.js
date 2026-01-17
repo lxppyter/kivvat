@@ -24,7 +24,15 @@ const cloud_module_1 = require("./cloud/cloud.module");
 const scanner_module_1 = require("./scanner/scanner.module");
 const policy_module_1 = require("./policy/policy.module");
 const asset_module_1 = require("./asset/asset.module");
+const audit_module_1 = require("./audit/audit.module");
+const auditor_readonly_guard_1 = require("./common/guards/auditor-readonly.guard");
+const watermark_middleware_1 = require("./common/middleware/watermark.middleware");
 let AppModule = class AppModule {
+    configure(consumer) {
+        consumer
+            .apply(watermark_middleware_1.WatermarkMiddleware)
+            .forRoutes('*');
+    }
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
@@ -43,8 +51,8 @@ exports.AppModule = AppModule = __decorate([
             analysis_module_1.AnalysisModule,
             task_module_1.TaskModule,
             report_module_1.ReportModule,
-            prisma_module_1.PrismaModule,
-            auth_module_1.AuthModule,
+            task_module_1.TaskModule,
+            report_module_1.ReportModule,
             prisma_module_1.PrismaModule,
             auth_module_1.AuthModule,
             compliance_module_1.ComplianceModule,
@@ -52,6 +60,7 @@ exports.AppModule = AppModule = __decorate([
             scanner_module_1.ScannerModule,
             policy_module_1.PolicyModule,
             asset_module_1.AssetModule,
+            audit_module_1.AuditModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [
@@ -59,6 +68,10 @@ exports.AppModule = AppModule = __decorate([
             {
                 provide: core_1.APP_GUARD,
                 useClass: throttler_1.ThrottlerGuard,
+            },
+            {
+                provide: core_1.APP_GUARD,
+                useClass: auditor_readonly_guard_1.AuditorReadOnlyGuard,
             },
         ],
     })

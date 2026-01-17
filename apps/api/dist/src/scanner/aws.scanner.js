@@ -11,6 +11,8 @@ const common_1 = require("@nestjs/common");
 const client_iam_1 = require("@aws-sdk/client-iam");
 const client_s3_1 = require("@aws-sdk/client-s3");
 const client_ec2_1 = require("@aws-sdk/client-ec2");
+const client_rds_1 = require("@aws-sdk/client-rds");
+const client_cloudtrail_1 = require("@aws-sdk/client-cloudtrail");
 let AwsScanner = class AwsScanner {
     async scan(credentials) {
         const results = [];
@@ -24,6 +26,8 @@ let AwsScanner = class AwsScanner {
         const iam = new client_iam_1.IAMClient(config);
         const s3 = new client_s3_1.S3Client(config);
         const ec2 = new client_ec2_1.EC2Client(config);
+        const rds = new client_rds_1.RDSClient(config);
+        const cloudtrail = new client_cloudtrail_1.CloudTrailClient(config);
         try {
             const summary = await iam.send(new client_iam_1.GetAccountSummaryCommand({}));
             const mfaEnabled = summary.SummaryMap?.['AccountMFAEnabled'];
@@ -206,6 +210,73 @@ let AwsScanner = class AwsScanner {
                 resourceId: 'EC2-Global',
                 severity: 'HIGH'
             });
+        }
+        try {
+            const { DBInstances } = await rds.send(new client_rds_1.DescribeDBInstancesCommand({}));
+            if (DBInstances) {
+                for (const db of DBInstances) {
+                    const dbId = db.DBInstanceIdentifier || 'Unknown';
+                    const isEncrypted = db.StorageEncrypted === true;
+                    if (isEncrypted) {
+                        results.push({
+                            ruleId: 'AWS-RDS-ENCRYPTION',
+                            status: 'COMPLIANT',
+                            resourceId: dbId,
+                            details: `RDS Instance ${dbId} storage IS encrypted.`,
+                            severity: 'HIGH',
+                        });
+                    }
+                    else {
+                        results.push({
+                            ruleId: 'AWS-RDS-ENCRYPTION',
+                            status: 'NON_COMPLIANT',
+                            resourceId: dbId,
+                            details: `RDS Instance ${dbId} storage is NOT encrypted. At rest data is vulnerable.`,
+                            severity: 'HIGH',
+                        });
+                    }
+                }
+            }
+        }
+        catch (e) {
+        }
+        try {
+            const { trailList } = await cloudtrail.send(new client_cloudtrail_1.DescribeTrailsCommand({}));
+            let hasActiveTrail = false;
+            if (trailList && trailList.length > 0) {
+                for (const trail of trailList) {
+                    if (trail.TrailARN) {
+                        try {
+                            const status = await cloudtrail.send(new client_cloudtrail_1.GetTrailStatusCommand({ Name: trail.TrailARN }));
+                            if (status.IsLogging) {
+                                hasActiveTrail = true;
+                                break;
+                            }
+                        }
+                        catch (err) { }
+                    }
+                }
+            }
+            if (hasActiveTrail) {
+                results.push({
+                    ruleId: 'AWS-CLOUDTRAIL',
+                    status: 'COMPLIANT',
+                    resourceId: 'CloudTrail-Global',
+                    details: `CloudTrail is enabled and actively logging events.`,
+                    severity: 'CRITICAL',
+                });
+            }
+            else {
+                results.push({
+                    ruleId: 'AWS-CLOUDTRAIL',
+                    status: 'NON_COMPLIANT',
+                    resourceId: 'CloudTrail-Global',
+                    details: `No active CloudTrail found! Forensics and audit logging is DISABLED.`,
+                    severity: 'CRITICAL',
+                });
+            }
+        }
+        catch (e) {
         }
         return results;
     }

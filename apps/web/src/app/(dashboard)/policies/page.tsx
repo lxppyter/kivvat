@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { compliance } from "@/lib/api";
+import { compliance, policy } from "@/lib/api";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -10,7 +10,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ShieldCheck, FileText, Lock, AlertTriangle, CheckCircle2, Download, Cloud, Users, Mail } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ShieldCheck, FileText, Lock, AlertTriangle, CheckCircle2, Download, Cloud, Users, Mail, Link as LinkIcon, Copy } from "lucide-react";
+import { toast } from "sonner";
+import Cookies from "js-cookie";
 
 interface Control {
   id: string;
@@ -29,10 +33,17 @@ interface Standard {
 }
 
 export default function PoliciesPage() {
+  const [isAuditor, setIsAuditor] = useState(false);
+
+  useEffect(() => {
+    setIsAuditor(Cookies.get("user_role") === "AUDITOR");
+  }, []);
+
   const [standards, setStandards] = useState<Standard[]>([]);
   const [templates, setTemplates] = useState<any[]>([]);
   const [assignments, setAssignments] = useState<any[]>([]);
   const [assignmentStats, setAssignmentStats] = useState<any>({ total: 0, signed: 0, pending: 0, overdue: 0, percentage: 0 });
+  const [signatureStats, setSignatureStats] = useState<any[]>([]);
   
   // For Employee View
   const [myAssignments, setMyAssignments] = useState<any[]>([]);
@@ -41,25 +52,89 @@ export default function PoliciesPage() {
   // For Management
   const [managePolicy, setManagePolicy] = useState<any>(null);
   const [history, setHistory] = useState<any[]>([]);
+  
+  // Share Management
+  const [showShareManager, setShowShareManager] = useState(false);
+  const [shares, setShares] = useState<any[]>([]);
+
+  // Share Dialog
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [shareTarget, setShareTarget] = useState<string | null>(null); // 'ALL' or policyId
+  const [shareResult, setShareResult] = useState<string | null>(null);
+  const [shareCustomExpiry, setShareCustomExpiry] = useState("30"); // days
 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    fetchPolicies();
+    fetchSignatures();
+  }, []);
+
+  const fetchSignatures = async () => {
+      try {
+          const res = await policy.getSignatures();
+          setSignatureStats(res.data);
+      } catch (e) {
+          console.error("Failed signatures", e);
+      }
+  };
+  
+  const fetchShares = async () => {
+      try {
+          const res = await policy.getShares();
+          setShares(res.data);
+      } catch (e) {
+          toast.error("Failed to load active links");
+      }
+  };
+
+  const handeRevokeShare = async (id: string) => {
+      if(!confirm("Are you sure you want to revoke this link? Users will no longer be able to access it.")) return;
+      try {
+          await policy.revokeShare(id);
+          toast.success("Link revoked");
+          fetchShares();
+      } catch (e) {
+          toast.error("Failed to revoke link");
+      }
+  };
+
+  const handleCreateShare = async () => {
+      try {
+          const { policy } = await import("@/lib/api");
+          let expiryDate: string | undefined = undefined;
+          
+          if (shareCustomExpiry !== "never") {
+              const days = parseInt(shareCustomExpiry);
+              const d = new Date();
+              d.setDate(d.getDate() + days);
+              expiryDate = d.toISOString();
+          }
+
+          let res;
+          if (shareTarget === 'ALL') {
+              res = await policy.createShareAll(expiryDate);
+          } else {
+              if(!shareTarget) return;
+              res = await policy.createShare(shareTarget, expiryDate);
+          }
+
+          setShareResult(res.data.url);
+          // fetchShares(); // Optional: refresh list immediately if we want
+      } catch (e: any) {
+          toast.error("Failed to generate link", { description: e.response?.data?.message });
+      }
+  };
+
+  const fetchPolicies = async () => {
         try {
-            // Need to get current user to fetch THEIR assignments.
-            // For this demo, we can just fetch *all* assignments where userId matches "me" (handled by backend or filtered here).
-            // Actually, backend needs `userId`. getAssignments(userId)
-            
             // First get profile
             const { auth } = await import("@/lib/api");
-            // If auth is not working fully yet, we might need a fallback.
             let profileId;
             try {
                 const profileRes = await auth.getProfile();
                 profileId = profileRes.data.id;
             } catch (e) {
-                // If 401, maybe just show empty myAssignments or a mock one for demo steps if needed.
                 console.warn("Not logged in");
             }
 
@@ -81,8 +156,6 @@ export default function PoliciesPage() {
             setLoading(false);
         }
     };
-    fetchData();
-  }, []);
 
   return (
     <div className="space-y-8 p-8 max-w-7xl mx-auto">
@@ -205,12 +278,30 @@ export default function PoliciesPage() {
             {/* DOCUMENTS TAB */}
             <TabsContent value="documents" className="space-y-4">
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Required Policy Documents</CardTitle>
-                        <CardDescription>
-                            Download standard templates, fill them out, and upload them to satisfy administrative controls.
-                        </CardDescription>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <div>
+                            <CardTitle>Required Policy Documents</CardTitle>
+                            <CardDescription>
+                                Manage your company's policy templates and versioning.
+                            </CardDescription>
+                        </div>
+                        {!isAuditor && (
+                            <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => {
+                                setShareTarget('ALL');
+                                setShareResult(null);
+                                setShareDialogOpen(true);
+                            }}>
+                                <LinkIcon className="h-4 w-4 mr-2" /> Share Policy Portal
+                            </Button>
+                        )}
                     </CardHeader>
+                    { !isAuditor && (
+                         <div className="px-6 pb-2 text-right">
+                             <Button variant="ghost" size="sm" onClick={() => { setShowShareManager(true); fetchShares(); }}>
+                                 Manage Active Links
+                             </Button>
+                         </div>
+                    )}
                     <CardContent className="p-0">
                          <div className="divide-y divide-border/50">
                             {templates.map((tmpl, i) => (
@@ -228,46 +319,79 @@ export default function PoliciesPage() {
                                         <Badge variant="outline" className="border-emerald-500/20 text-emerald-500 bg-emerald-500/5">
                                             available
                                         </Badge>
-                                        <Button 
-                                            size="sm" 
-                                            variant="secondary" 
-                                            className="gap-2"
-                                            onClick={async () => {
-                                                const { policy } = await import("@/lib/api");
-                                                const res = await policy.getHistory(tmpl.id);
-                                                setHistory(res.data);
-                                                setManagePolicy({ ...tmpl, content: tmpl.content, version: tmpl.version || '1.0' });
-                                            }}
-                                        >
-                                            <Lock className="h-3 w-3" /> Manage
-                                        </Button>
+                                        
+                                        {!isAuditor ? (
+                                            <>
+                                                <Button 
+                                                    size="sm" 
+                                                    variant="secondary" 
+                                                    className="gap-2"
+                                                    onClick={async () => {
+                                                        const { policy } = await import("@/lib/api");
+                                                        const res = await policy.getHistory(tmpl.id);
+                                                        setHistory(res.data);
+                                                        setManagePolicy({ ...tmpl, content: tmpl.content, version: tmpl.version || '1.0' });
+                                                    }}
+                                                >
+                                                    <Lock className="h-3 w-3" /> Manage
+                                                </Button>
 
-                                        <Button 
-                                            size="sm" 
-                                            variant="secondary" 
-                                            className="gap-2"
-                                            onClick={async () => {
-                                                try {
-                                                    const { policy } = await import("@/lib/api");
-                                                    const res = await policy.download(tmpl.id, "Demo Company Ltd.");
-                                                    
-                                                    // Create blob and simple download
-                                                    const blob = new Blob([res.data.content], { type: 'text/markdown' });
-                                                    const url = window.URL.createObjectURL(blob);
-                                                    const a = document.createElement('a');
-                                                    a.href = url;
-                                                    a.download = `${res.data.name.replace(/\s+/g, '_')}_Template.md`;
-                                                    document.body.appendChild(a);
-                                                    a.click();
-                                                    window.URL.revokeObjectURL(url);
-                                                    document.body.removeChild(a);
-                                                } catch (e) {
-                                                    alert("Failed to download template");
-                                                }
-                                            }}
-                                        >
-                                            <Download className="h-3 w-3" /> Template
-                                        </Button>
+                                                <Button 
+                                                    size="sm" 
+                                                    variant="secondary" 
+                                                    className="gap-2"
+                                                    onClick={async () => {
+                                                        try {
+                                                            const { policy } = await import("@/lib/api");
+                                                            const res = await policy.download(tmpl.id, "Demo Company Ltd.");
+                                                            const blob = new Blob([res.data.content], { type: 'text/markdown' });
+                                                            const url = window.URL.createObjectURL(blob);
+                                                            const a = document.createElement('a');
+                                                            a.href = url;
+                                                            a.download = `${res.data.name.replace(/\s+/g, '_')}_Template.md`;
+                                                            document.body.appendChild(a);
+                                                            a.click();
+                                                            window.URL.revokeObjectURL(url);
+                                                            document.body.removeChild(a);
+                                                        } catch (e) {
+                                                            alert("Failed to download template");
+                                                        }
+                                                    }}
+                                                >
+                                                    <Download className="h-3 w-3" /> Template
+                                                </Button>
+                                            </>
+                                        ) : (
+                                            <Button 
+                                                size="sm" 
+                                                variant="secondary" 
+                                                className="gap-2"
+                                                onClick={() => {
+                                                    setSelectedPolicy({
+                                                        id: tmpl.id,
+                                                        name: tmpl.name,
+                                                        content: tmpl.content
+                                                    });
+                                                }}
+                                            >
+                                                <FileText className="h-3 w-3" /> View
+                                            </Button>
+                                        )}
+                                        
+                                        {!isAuditor && (
+                                            <Button 
+                                                size="sm" 
+                                                variant="outline" 
+                                                className="gap-2 text-indigo-600 border-indigo-200 hover:bg-indigo-50"
+                                                onClick={() => {
+                                                    setShareTarget(tmpl.id);
+                                                    setShareResult(null);
+                                                    setShareDialogOpen(true);
+                                                }}
+                                            >
+                                                <LinkIcon className="h-3 w-3" /> Share
+                                            </Button>
+                                        )}
                                     </div>
                                 </div>
                             ))}
@@ -290,6 +414,9 @@ export default function PoliciesPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="p-0">
+                        <div className="p-4 bg-blue-50/50 border-b border-blue-100 text-xs text-blue-700 font-mono">
+                            <span className="font-bold">BİLGİ:</span> "Dijital İmza", politikanın okunduğunu ve kabul edildiğini zaman damgasıyla (timestamp) kayıt altına alır. Islak imza gerektirmez.
+                        </div>
                          <div className="divide-y divide-border/50">
                             {myAssignments.length === 0 ? (
                                 <div className="p-8 text-center text-muted-foreground">
@@ -376,35 +503,39 @@ export default function PoliciesPage() {
                                 Track adherence to mandatory security policies across the organization.
                             </CardDescription>
                         </div>
-                        <Button size="sm">
-                            <Mail className="h-4 w-4 mr-2" /> Send Reminders
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            {/* Buttons removed as requested: Employee flow is now via Public Portal Link */}
+                        </div>
+
                     </CardHeader>
                     <CardContent>
                          <div className="space-y-4">
-                            {assignments.map((assignment, i) => (
-                                <div key={i} className="flex items-center justify-between p-4 border rounded-xl hover:bg-muted/50 transition-colors">
-                                    <div className="flex items-center gap-4">
-                                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-                                            {assignment.user.name.split(' ').map((n: string) => n[0]).join('')}
+                            {signatureStats.length === 0 ? (
+                                <div className="p-4 text-center text-sm text-muted-foreground font-mono">Veri bulunamadı.</div>
+                            ) : (
+                                signatureStats.map((stat) => (
+                                    <div key={stat.id} className="flex items-center justify-between p-4 border rounded-lg bg-card/40">
+                                        <div className="flex items-center gap-4">
+                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold overflow-hidden">
+                                                {stat.name ? stat.name.charAt(0).toUpperCase() : '?'}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium font-mono">{stat.name}</p>
+                                                <p className="text-xs text-muted-foreground font-mono">{stat.email} • {stat.role || 'STAFF'}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h4 className="font-semibold text-sm">{assignment.user.name}</h4>
-                                            <p className="text-xs text-muted-foreground text-ellipsis max-w-xs overflow-hidden whitespace-nowrap" title={assignment.policy.name}>
-                                                {assignment.policy.name}
-                                            </p>
+                                        <div className="flex items-center gap-6">
+                                            <div className="text-right">
+                                                <p className="text-xs text-muted-foreground font-mono">İmzalanan</p>
+                                                <p className="text-sm font-bold font-mono">{stat.signedCount} / {stat.totalPolicies}</p>
+                                            </div>
+                                            <Badge variant="outline" className={`font-mono ${stat.status === 'COMPLIANT' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-amber-500/10 text-amber-500 border-amber-500/20'}`}>
+                                                {stat.status === 'COMPLIANT' ? 'TAMAMLANDI' : 'BEKLİYOR'}
+                                            </Badge>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-4">
-                                        <span className="text-xs text-muted-foreground font-mono">
-                                            {assignment.signedAt ? new Date(assignment.signedAt).toLocaleDateString() : '-'}
-                                        </span>
-                                        {assignment.status === 'SIGNED' && <Badge className="bg-emerald-500">Signed</Badge>}
-                                        {assignment.status === 'PENDING' && <Badge variant="outline" className="border-amber-500 text-amber-500">Pending</Badge>}
-                                        {assignment.status === 'OVERDUE' && <Badge variant="destructive">Overdue</Badge>}
-                                    </div>
-                                </div>
-                            ))}
+                                ))
+                            )}
                          </div>
                     </CardContent>
                 </Card>
@@ -430,7 +561,7 @@ export default function PoliciesPage() {
                             <textarea 
                                 className="flex-1 w-full p-4 font-mono text-sm border rounded-md bg-muted/30 resize-none focus:outline-none focus:ring-2 focus:ring-ring"
                                 value={managePolicy?.content || ''}
-                                onChange={(e) => setManagePolicy(prev => prev ? { ...prev, content: e.target.value } : null)}
+                                onChange={(e) => setManagePolicy((prev: any) => prev ? { ...prev, content: e.target.value } : null)}
                             />
                             <div className="flex justify-end gap-2">
                                 <Button variant="outline" onClick={() => setManagePolicy(null)}>Cancel</Button>
@@ -500,32 +631,34 @@ export default function PoliciesPage() {
                         </span>
                         <div className="flex gap-2">
                             <Button variant="outline" onClick={() => setSelectedPolicy(null)}>Cancel</Button>
-                            <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={async () => {
-                                if (!selectedPolicy) return;
-                                try {
-                                    const { policy } = await import("@/lib/api");
-                                    await policy.sign(selectedPolicy.id);
-                                    
-                                    // Optimistic update
-                                    setMyAssignments(prev => prev.map(a => 
-                                        a.id === selectedPolicy.id ? { ...a, status: 'SIGNED', signedAt: new Date().toISOString() } : a
-                                    ));
-                                    
-                                    // Update stats as well
-                                    const { policy: p } = await import("@/lib/api");
-                                    const assignRes = await p.getAssignments();
-                                    setAssignments(assignRes.data.assignments);
-                                    setAssignmentStats(assignRes.data.stats);
+                            {!isAuditor && (
+                                <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={async () => {
+                                    if (!selectedPolicy) return;
+                                    try {
+                                        const { policy } = await import("@/lib/api");
+                                        await policy.sign(selectedPolicy.id);
+                                        
+                                        // Optimistic update
+                                        setMyAssignments(prev => prev.map(a => 
+                                            a.id === selectedPolicy.id ? { ...a, status: 'SIGNED', signedAt: new Date().toISOString() } : a
+                                        ));
+                                        
+                                        // Update stats as well
+                                        const { policy: p } = await import("@/lib/api");
+                                        const assignRes = await p.getAssignments();
+                                        setAssignments(assignRes.data.assignments);
+                                        setAssignmentStats(assignRes.data.stats);
 
-                                    setSelectedPolicy(null);
-                                    alert("Policy signed successfully!");
-                                } catch (e) {
-                                    alert("Failed to sign policy");
-                                }
-                            }}>
-                                <CheckCircle2 className="h-4 w-4 mr-2" />
-                                I Agree & Sign
-                            </Button>
+                                        setSelectedPolicy(null);
+                                        alert("Policy signed successfully!");
+                                    } catch (e) {
+                                        alert("Failed to sign policy");
+                                    }
+                                }}>
+                                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                                    I Agree & Sign
+                                </Button>
+                            )}
                         </div>
                     </DialogFooter>
                 </DialogContent>
@@ -571,12 +704,6 @@ export default function PoliciesPage() {
                                                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Audit Trail & Evidence</h4>
                                                  <div className="space-y-2">
                                                      <Button variant="outline" size="sm" className="h-8 text-xs gap-2" onClick={async (e) => {
-                                                         // Prevent accordion toggle if needed, or just let it be
-                                                         // Ideally we would fetch history here on demand
-                                                         // For now, let's open a new window to the evidence report of the LATEST scan if available
-                                                         // Or show a list. Let's make it a list in a Dialog for now, or just a direct link to report if we had scan ID.
-                                                         
-                                                         // Simpler: Just fetch history and alert for now to verify backend, then build UI
                                                          try {
                                                              const { evidence } = await import("@/lib/api");
                                                              const res = await evidence.getHistory(control.id);
@@ -606,6 +733,124 @@ export default function PoliciesPage() {
             </TabsContent>
         </Tabs>
       )}
+      <Dialog open={showShareManager} onOpenChange={setShowShareManager}>
+        <DialogContent className="max-w-3xl">
+            <DialogHeader>
+                <DialogTitle>Active Public Links</DialogTitle>
+                <DialogDescription>
+                    Manage active sharing links. Revoked links will strictly deny access immediately.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+                <div className="border rounded-md">
+                    <div className="grid grid-cols-5 gap-4 p-4 bg-muted/50 font-medium text-sm">
+                        <div className="col-span-2">Type / Policy</div>
+                        <div>Created</div>
+                        <div>Expires</div>
+                        <div className="text-right">Action</div>
+                    </div>
+                    <div className="divide-y max-h-[400px] overflow-y-auto">
+                        {shares.length === 0 ? (
+                            <div className="p-8 text-center text-muted-foreground text-sm">No active links found.</div>
+                        ) : (
+                            shares.map((share: any) => (
+                                <div key={share.id} className="grid grid-cols-5 gap-4 p-4 text-sm items-center">
+                                    <div className="col-span-2">
+                                        <div className="font-medium">
+                                            {share.policyId ? share.policy?.name : "Company Policy Portal"}
+                                        </div>
+                                        <div className="text-xs text-muted-foreground truncate font-mono mt-1">
+                                            {share.token}
+                                        </div>
+                                    </div>
+                                    <div className="text-muted-foreground">
+                                        {new Date(share.createdAt).toLocaleDateString()}
+                                    </div>
+                                    <div className="text-muted-foreground">
+                                        {share.expiresAt ? new Date(share.expiresAt).toLocaleDateString() : 'Never'}
+                                    </div>
+                                    <div className="text-right flex items-center justify-end gap-2">
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => {
+                                            const url = window.location.origin + (share.policyId ? `/public/policy/${share.token}` : `/public/portal/${share.token}`);
+                                            navigator.clipboard.writeText(url);
+                                            toast.success("Link copied");
+                                        }}>
+                                            <Copy className="h-4 w-4" />
+                                        </Button>
+                                        <Button variant="destructive" size="sm" onClick={() => handeRevokeShare(share.id)}>
+                                            Revoke
+                                        </Button>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+            </div>
+            <DialogFooter>
+                <Button variant="outline" onClick={() => setShowShareManager(false)}>Close</Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+                <DialogTitle>Share Public Link</DialogTitle>
+                <DialogDescription>
+                    Create a secure link for non-registered users to sign {shareTarget === 'ALL' ? 'all policies in the portal' : 'this policy'}.
+                </DialogDescription>
+            </DialogHeader>
+            
+            {shareResult ? (
+                <div className="space-y-4 py-4">
+                    <div className="flex items-center space-x-2">
+                        <div className="grid flex-1 gap-2">
+                            <Label htmlFor="link" className="sr-only">Link</Label>
+                            <Input id="link" value={shareResult} readOnly />
+                        </div>
+                        <Button size="sm" className="px-3" onClick={() => {
+                            navigator.clipboard.writeText(shareResult);
+                            toast.success("Copied to clipboard");
+                        }}>
+                            <span className="sr-only">Copy</span>
+                            <Copy className="h-4 w-4" />
+                        </Button>
+                    </div>
+                    <div className="text-sm text-muted-foreground bg-blue-50 text-blue-800 p-3 rounded-md">
+                        <p>Tip: Any existing active link for this policy is reused.</p>
+                    </div>
+                </div>
+            ) : (
+                <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                        <Label>Expiration</Label>
+                        <select 
+                            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                            value={shareCustomExpiry}
+                            onChange={(e) => setShareCustomExpiry(e.target.value)}
+                        >
+                            <option value="7">7 Days</option>
+                            <option value="30">30 Days (Standard)</option>
+                            <option value="90">90 Days</option>
+                            <option value="never">Never Expire</option>
+                        </select>
+                    </div>
+                </div>
+            )}
+
+            <DialogFooter className="sm:justify-end">
+                <Button variant="secondary" type="button" onClick={() => setShareDialogOpen(false)}>
+                    Close
+                </Button>
+                {!shareResult && (
+                    <Button type="button" onClick={handleCreateShare}>
+                        Generate Link
+                    </Button>
+                )}
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

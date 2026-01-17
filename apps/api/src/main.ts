@@ -2,10 +2,14 @@ import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { FingerprintExceptionFilter } from './common/filters/fingerprint.exception.filter';
 import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  // Register Fingerprint Filter
+  app.useGlobalFilters(new FingerprintExceptionFilter());
+
   app.useGlobalPipes(new ValidationPipe({ 
     whitelist: true,
     forbidNonWhitelisted: true,
@@ -22,7 +26,19 @@ async function bootstrap() {
   });
 
   const port = process.env.PORT || 3000;
-  console.log(`Application is running on: http://localhost:${port} [v2.1]`);
+  console.log(`Application is running on: http://localhost:${port} [v2.2]`);
+  
+  // Anti-Theft / Copyright Notice (Watermark)
+  // Check removed for visibility in Dev
+  console.log(`\x1b[31m
+    ********************************************
+    * KIVVAT SECURITY ENGINE (AGPLv3 LICENSED) *
+    * COPYRIGHT (C) 2026 KIVVAT INC.           *
+    * UNAUTHORIZED COPYING IS PROHIBITED       *
+    * TRACKING ID: KIV-992-X-771               *
+    ********************************************
+    \x1b[0m`);
+
   await app.listen(port);
 }
 bootstrap();

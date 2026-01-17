@@ -21,7 +21,15 @@ async function bootstrap() {
         credentials: true,
     });
     const port = process.env.PORT || 3000;
-    console.log(`Application is running on: http://localhost:${port} [v2.1]`);
+    console.log(`Application is running on: http://localhost:${port} [v2.2]`);
+    console.log(`\x1b[31m
+    ********************************************
+    * KIVVAT SECURITY ENGINE (AGPLv3 LICENSED) *
+    * COPYRIGHT (C) 2026 KIVVAT INC.           *
+    * UNAUTHORIZED COPYING IS PROHIBITED       *
+    * TRACKING ID: KIV-992-X-771               *
+    ********************************************
+    \x1b[0m`);
     await app.listen(port);
 }
 bootstrap();

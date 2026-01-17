@@ -63,12 +63,28 @@ api.interceptors.response.use(
           // Refresh failed - Logout user
           Cookies.remove("token");
           Cookies.remove("refresh_token");
-          window.location.href = "/login";
+          
+          // Trigger custom event for UI to show toast
+          if (typeof window !== 'undefined') {
+             window.dispatchEvent(new Event("access_denied"));
+             
+             // Wait 4 seconds then redirect
+             setTimeout(() => {
+                window.location.href = "/login";
+             }, 4000);
+          }
         }
       } else {
         // No refresh token available
         Cookies.remove("token");
-        window.location.href = "/login";
+        
+        if (typeof window !== 'undefined') {
+             window.dispatchEvent(new Event("access_denied"));
+             
+             setTimeout(() => {
+                window.location.href = "/login";
+             }, 4000);
+        }
       }
     }
 
@@ -79,6 +95,7 @@ api.interceptors.response.use(
 
 export const auth = {
   getProfile: () => api.get("/auth/me"),
+  updateProfile: (data: any) => api.patch("/auth/me", data),
 };
 
 export const compliance = {
@@ -90,9 +107,17 @@ export const policy = {
   getTemplates: () => api.get("/policies/templates"),
   getAssignments: (userId?: string) => api.get("/policies/assignments", { params: { userId } }),
   sign: (id: string) => api.post(`/policies/sign/${id}`),
-  download: (id: string, companyName: string) => api.get(`/policies/download/${id}`, { params: { companyName } }),
+  download: (id: string, companyName: string) => api.get(`/policies/download/${id}?companyName=${companyName}`),
   update: (id: string, content: string) => api.post(`/policies/${id}`, { content }),
   getHistory: (id: string) => api.get(`/policies/${id}/history`),
+  getSignatures: () => api.get("/policies/signatures"),
+  // Public / Share
+  createShare: (id: string, expiresAt?: string) => api.post(`/policies/${id}/share`, { expiresAt }),
+  createShareAll: (expiresAt?: string) => api.post(`/policies/share/all`, { expiresAt }),
+  getPublic: (token: string) => api.get(`/policies/public/${token}`),
+  signPublic: (token: string, data: { name: string, email: string, policyId?: string }) => api.post(`/policies/public/${token}/sign`, data),
+  getShares: () => api.get("/policies/shares"),
+  revokeShare: (id: string) => api.delete(`/policies/share/${id}`),
 };
 
 export const evidence = {
@@ -103,14 +128,25 @@ export const evidence = {
 export const assets = {
   getAll: (userId?: string) => api.get('/assets', { params: { userId } }),
   create: (data: any) => api.post('/assets', data),
+  update: (id: string, data: any) => api.patch(`/assets/${id}`, data),
+  remove: (id: string) => api.delete(`/assets/${id}`),
+  createBulk: (data: any) => api.post('/assets/bulk', data),
 };
 
 export const scanner = {
   getReports: () => api.get('/scanner/reports'),
 };
 
+export const audit = {
+  createShare: (data: { name: string, hours: number }) => api.post('/audit/share', data),
+  access: (token: string) => api.post('/audit/access', { token }),
+  list: () => api.get('/audit/shares'),
+  revoke: (id: string) => api.delete(`/audit/share/${id}`),
+};
+
 export const reports = {
   downloadPdf: (id: string) => api.get(`/reports/${id}/pdf`, { responseType: 'blob' }),
+  downloadZip: (id: string) => api.get(`/reports/${id}/zip`, { responseType: 'blob' }),
 };
 
 export const tasks = {

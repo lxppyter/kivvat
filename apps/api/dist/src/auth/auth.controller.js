@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const auth_service_1 = require("./auth.service");
 const register_dto_1 = require("./dto/register.dto");
 const login_dto_1 = require("./dto/login.dto");
+const update_profile_dto_1 = require("./dto/update-profile.dto");
 const passport_1 = require("@nestjs/passport");
 const throttler_1 = require("@nestjs/throttler");
 let AuthController = class AuthController {
@@ -33,6 +34,10 @@ let AuthController = class AuthController {
     getProfile(req) {
         const user = req.user;
         return this.authService.getProfile(user['userId']);
+    }
+    updateProfile(req, dto) {
+        const user = req.user;
+        return this.authService.updateProfile(user['userId'], dto);
     }
     logout(req) {
         const user = req.user;
@@ -69,6 +74,15 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "getProfile", null);
+__decorate([
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
+    (0, common_1.Patch)('me'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, update_profile_dto_1.UpdateProfileDto]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "updateProfile", null);
 __decorate([
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
     (0, common_1.Post)('logout'),

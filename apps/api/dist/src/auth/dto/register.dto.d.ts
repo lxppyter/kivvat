@@ -2,5 +2,5 @@ export declare class RegisterDto {
     email: string;
     password: string;
     name?: string;
-    companyName: string;
+    company_name: string;
 }

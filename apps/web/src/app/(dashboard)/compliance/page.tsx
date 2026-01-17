@@ -1,30 +1,71 @@
 "use client";
 
-import { useState } from "react";
+import Cookies from "js-cookie";
+import { useEffect, useState } from "react";
 import { ShieldCheck, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 
+import { ScanDialog } from "@/components/dashboard/scan-dialog";
+
 export default function CompliancePage() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<any[]>([]);
+  const [isAuditor, setIsAuditor] = useState(false);
+  const [scanDialogOpen, setScanDialogOpen] = useState(false);
 
-  const runDeepScan = async () => {
-      setLoading(true);
+  useEffect(() => {
+    setIsAuditor(Cookies.get("user_role") === "AUDITOR");
+    // Initial fetch of latest results
+    fetchLatestResults();
+  }, []);
+
+  const fetchLatestResults = async () => {
       try {
-          const storedCreds = localStorage.getItem('aws_credentials');
-          if (!storedCreds) {
-              alert("Bağlantı bilgisi bulunamadı. Lütfen 'Bağlantı' sayfasından giriş yapın.");
-              setLoading(false);
-              return;
+          const res = await api.get('/scanner/reports');
+          if (res.data && res.data.length > 0) {
+              setResults(res.data[0].results);
           }
-          const credentials = JSON.parse(storedCreds);
+      } catch (e) {
+          console.error("Failed to fetch history", e);
+      }
+  };
 
-          const response = await api.post('/scanner/run', { provider: 'aws', credentials });
-          setResults(response.data);
+  const openScanDialog = () => {
+    setScanDialogOpen(true);
+  };
+
+  const handleScanStart = async (selectedProviders: string[]) => {
+      setLoading(true);
+      setScanDialogOpen(false);
+      setResults([]); // Clear previous
+
+      try {
+          let accumulatedResults: any[] = [];
+
+          for (const providerId of selectedProviders) {
+              let credentials = {};
+              if (providerId === 'aws') credentials = JSON.parse(localStorage.getItem('aws_credentials') || '{}');
+              if (providerId === 'azure') credentials = JSON.parse(localStorage.getItem('azure_credentials') || '{}');
+              if (providerId === 'gcp') credentials = JSON.parse(localStorage.getItem('gcp_credentials') || '{}');
+              
+              const apiProvider = providerId === 'demo' ? 'manual' : providerId;
+
+              const response = await api.post('/scanner/run', { 
+                  provider: apiProvider, 
+                  credentials 
+              });
+              
+              if (response.data) {
+                  accumulatedResults = [...accumulatedResults, ...response.data];
+              }
+          }
+          
+          setResults(accumulatedResults);
+
       } catch (error) {
           console.error("Compliance Scan Error:", error);
-          alert("Tarama hatası.");
+          alert("Tarama hatası. Bağlantıları kontrol edin.");
       } finally {
           setLoading(false);
       }
@@ -32,14 +73,21 @@ export default function CompliancePage() {
 
   return (
     <div className="space-y-6">
+      <ScanDialog 
+        open={scanDialogOpen} 
+        onOpenChange={setScanDialogOpen} 
+        onScan={handleScanStart}
+        loading={loading}
+      />
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold tracking-tight text-foreground font-mono">Uyumluluk Denetimi</h1>
           <p className="text-sm text-muted-foreground font-mono">
-            AWS ISO 27001 & SOC2 Referans Kontrolleri
+            Çoklu Bulut (AWS, Azure, GCP) ISO 27001 & SOC2 Kontrolleri
           </p>
         </div>
-        <Button onClick={runDeepScan} disabled={loading} className="bg-primary text-primary-foreground font-mono text-xs uppercase tracking-wider h-10 px-6 hover:bg-primary/90 rounded-lg shadow-sm">
+        <Button onClick={openScanDialog} disabled={loading} className="bg-primary text-primary-foreground font-mono text-xs uppercase tracking-wider h-10 px-6 hover:bg-primary/90 rounded-lg shadow-sm">
             {loading ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <ShieldCheck className="mr-2 h-3.5 w-3.5" />}
             Denetimi Başlat
         </Button>

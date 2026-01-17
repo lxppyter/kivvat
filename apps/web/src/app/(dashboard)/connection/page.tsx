@@ -6,8 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Cloud, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { Cloud, CheckCircle2, AlertCircle, Loader2, Shield } from "lucide-react";
 import api from "@/lib/api";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function ConnectionPage() {
   const [loading, setLoading] = useState(false);
@@ -17,6 +18,16 @@ export default function ConnectionPage() {
     accessKeyId: "",
     secretAccessKey: "",
     region: "us-east-1"
+  });
+
+  const [azureForm, setAzureForm] = useState({
+    tenantId: "",
+    clientId: "",
+    clientSecret: ""
+  });
+
+  const [gcpForm, setGcpForm] = useState({
+    serviceAccountJson: ""
   });
 
   const handleConnect = async (provider: string, data: any) => {
@@ -61,6 +72,14 @@ export default function ConnectionPage() {
 
             {/* AWS Tab */}
             <TabsContent value="aws" className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <Alert className="bg-blue-50/50 border-blue-200 text-blue-900">
+                <Shield className="h-4 w-4 text-blue-600" />
+                <AlertTitle className="text-xs font-bold text-blue-700">SADECE OKUMA ERİŞİMİ GEREKLİ</AlertTitle>
+                <AlertDescription className="text-[10px] text-blue-800/80 leading-relaxed mt-1">
+                  Güvenliğiniz için lütfen IAM Kullanıcısına sadece <strong>ReadOnlyAccess</strong> veya <strong>SecurityAudit</strong> yetkisi verin. 
+                  Yönetici yetkisine (Admin) ihtiyacımız yoktur.
+                </AlertDescription>
+              </Alert>
               <div className="grid gap-6">
                 <div className="grid gap-2">
                   <Label htmlFor="aws-key" className="text-xs font-mono font-medium tracking-wide text-muted-foreground">ACCESS KEY ID</Label>
@@ -105,19 +124,91 @@ export default function ConnectionPage() {
             </TabsContent>
 
             {/* Azure Tab */}
-            <TabsContent value="azure" className="space-y-4">
-               <div className="p-8 bg-muted/40 border border-border/50 border-dashed rounded-lg text-xs font-mono text-muted-foreground text-center">
-                  Azure entegrasyon modülü yakında aktif olacak.
+            <TabsContent value="azure" className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <Alert className="bg-blue-50/50 border-blue-200 text-blue-900">
+                <Shield className="h-4 w-4 text-blue-600" />
+                <AlertTitle className="text-xs font-bold text-blue-700">SADECE OKUMA ERİŞİMİ GEREKLİ</AlertTitle>
+                <AlertDescription className="text-[10px] text-blue-800/80 leading-relaxed mt-1">
+                  Güvenliğiniz için lütfen Service Principal'a sadece <strong>Reader</strong> veya <strong>Viewer</strong> yetkisi verin. 
+                  Write/Owner yetkisine ihtiyacımız yoktur.
+                </AlertDescription>
+              </Alert>
+               <div className="grid gap-6">
+                    <div className="grid gap-2">
+                        <Label htmlFor="az-tenant" className="text-xs font-mono font-medium tracking-wide text-muted-foreground">TENANT ID (DIRECTORY ID)</Label>
+                        <Input 
+                            id="az-tenant" 
+                            placeholder="00000000-0000-0000-0000-000000000000" 
+                            className="font-mono bg-background border-border/80 focus-visible:ring-primary rounded-lg h-11"
+                            value={azureForm.tenantId}
+                            onChange={(e) => setAzureForm({...azureForm, tenantId: e.target.value})}
+                        />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="az-client" className="text-xs font-mono font-medium tracking-wide text-muted-foreground">CLIENT ID (APPLICATION ID)</Label>
+                        <Input 
+                            id="az-client" 
+                            placeholder="00000000-0000-0000-0000-000000000000" 
+                            className="font-mono bg-background border-border/80 focus-visible:ring-primary rounded-lg h-11"
+                            value={azureForm.clientId}
+                            onChange={(e) => setAzureForm({...azureForm, clientId: e.target.value})}
+                        />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="az-secret" className="text-xs font-mono font-medium tracking-wide text-muted-foreground">CLIENT SECRET</Label>
+                        <Input 
+                            id="az-secret" 
+                            type="password" 
+                            placeholder="Value..." 
+                            className="font-mono bg-background border-border/80 focus-visible:ring-primary rounded-lg h-11"
+                            value={azureForm.clientSecret}
+                            onChange={(e) => setAzureForm({...azureForm, clientSecret: e.target.value})}
+                        />
+                    </div>
                </div>
-               <Button className="w-full h-12 border border-border text-muted-foreground bg-transparent hover:bg-muted font-mono rounded-lg tracking-wide text-xs" disabled variant="outline">Kullanılamaz</Button>
+               <Button 
+                className="w-full h-12 bg-blue-600 text-white hover:bg-blue-700 font-mono rounded-lg tracking-wide text-xs shadow-sm mt-2" 
+                disabled={loading}
+                onClick={() => handleConnect('azure', azureForm)}
+               >
+                 {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Cloud className="mr-2 h-4 w-4" />}
+                 AZURE BAĞLAN
+               </Button>
             </TabsContent>
 
             {/* GCP Tab */}
-            <TabsContent value="gcp" className="space-y-4">
-               <div className="p-8 bg-muted/40 border border-border/50 border-dashed rounded-lg text-xs font-mono text-muted-foreground text-center">
-                  GCP entegrasyon modülü yakında aktif olacak.
+            <TabsContent value="gcp" className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <Alert className="bg-blue-50/50 border-blue-200 text-blue-900">
+                <Shield className="h-4 w-4 text-blue-600" />
+                <AlertTitle className="text-xs font-bold text-blue-700">SADECE OKUMA ERİŞİMİ GEREKLİ</AlertTitle>
+                <AlertDescription className="text-[10px] text-blue-800/80 leading-relaxed mt-1">
+                  Güvenliğiniz için Service Account'a sadece <strong>Viewer</strong> veya <strong>Security Reviewer</strong> rolleri atayın.
+                  Owner/Editor yetkisine ihtiyacımız yoktur.
+                </AlertDescription>
+              </Alert>
+               <div className="grid gap-6">
+                    <div className="grid gap-2">
+                        <Label htmlFor="gcp-key" className="text-xs font-mono font-medium tracking-wide text-muted-foreground">SERVICE ACCOUNT JSON</Label>
+                        <textarea 
+                            id="gcp-key" 
+                            placeholder='{ "type": "service_account", "project_id": "...", ... }' 
+                            className="font-mono bg-background border border-border/80 focus-visible:ring-primary rounded-lg min-h-[120px] p-3 text-xs resize-y"
+                            value={gcpForm.serviceAccountJson}
+                            onChange={(e) => setGcpForm({...gcpForm, serviceAccountJson: e.target.value})}
+                        />
+                         <p className="text-[10px] text-muted-foreground">
+                            Paste the full content of your Service Account JSON key file here.
+                        </p>
+                    </div>
                </div>
-                <Button className="w-full h-12 border border-border text-muted-foreground bg-transparent hover:bg-muted font-mono rounded-lg tracking-wide text-xs" disabled variant="outline">Kullanılamaz</Button>
+                <Button 
+                className="w-full h-12 bg-yellow-600 text-white hover:bg-yellow-700 font-mono rounded-lg tracking-wide text-xs shadow-sm mt-2" 
+                disabled={loading}
+                onClick={() => handleConnect('gcp', gcpForm)}
+               >
+                 {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Cloud className="mr-2 h-4 w-4" />}
+                 GCP BAĞLAN
+               </Button>
             </TabsContent>
           </Tabs>
 

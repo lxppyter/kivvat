@@ -15,17 +15,27 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AssetController = void 0;
 const common_1 = require("@nestjs/common");
 const asset_service_1 = require("./asset.service");
+const passport_1 = require("@nestjs/passport");
 let AssetController = class AssetController {
     assetService;
     constructor(assetService) {
         this.assetService = assetService;
     }
-    async findAll(req) {
-        return this.assetService.findAll(req.query?.userId || 'user-123');
+    findAll(req) {
+        return this.assetService.findAll(req.user.userId);
     }
-    async create(body) {
+    async create(req, body) {
         const { userId, ...data } = body;
-        return this.assetService.create(userId || 'user-123', data);
+        return this.assetService.create(req.user.userId, data);
+    }
+    async update(id, body) {
+        return this.assetService.update(id, body);
+    }
+    async remove(id) {
+        return this.assetService.remove(id);
+    }
+    async createBulk(req, body) {
+        return this.assetService.createMany(req.user.userId, body.items);
     }
 };
 exports.AssetController = AssetController;
@@ -34,17 +44,42 @@ __decorate([
     __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
+    __metadata("design:returntype", void 0)
 ], AssetController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Post)(),
-    __param(0, (0, common_1.Body)()),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], AssetController.prototype, "create", null);
+__decorate([
+    (0, common_1.Patch)(':id'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], AssetController.prototype, "update", null);
+__decorate([
+    (0, common_1.Delete)(':id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], AssetController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Post)('bulk'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], AssetController.prototype, "createBulk", null);
 exports.AssetController = AssetController = __decorate([
     (0, common_1.Controller)('assets'),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
     __metadata("design:paramtypes", [asset_service_1.AssetService])
 ], AssetController);
 //# sourceMappingURL=asset.controller.js.map

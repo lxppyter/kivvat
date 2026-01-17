@@ -10,6 +10,7 @@ exports.ScannerModule = void 0;
 const common_1 = require("@nestjs/common");
 const aws_scanner_1 = require("./aws.scanner");
 const azure_scanner_1 = require("./azure.scanner");
+const gcp_scanner_1 = require("./gcp.scanner");
 const scanner_service_1 = require("./scanner.service");
 const scanner_controller_1 = require("./scanner.controller");
 const cloud_module_1 = require("../cloud/cloud.module");
@@ -22,7 +23,7 @@ exports.ScannerModule = ScannerModule = __decorate([
     (0, common_1.Module)({
         imports: [cloud_module_1.CloudModule, prisma_module_1.PrismaModule, task_module_1.TaskModule],
         controllers: [scanner_controller_1.ScannerController],
-        providers: [aws_scanner_1.AwsScanner, azure_scanner_1.AzureScanner, scanner_service_1.ScannerService],
+        providers: [aws_scanner_1.AwsScanner, azure_scanner_1.AzureScanner, gcp_scanner_1.GcpScanner, scanner_service_1.ScannerService],
         exports: [scanner_service_1.ScannerService],
     })
 ], ScannerModule);

@@ -33,6 +33,9 @@
     --ring: hsl(222.2 84% 4.9%);
     
     --radius: 0.5rem; /* Rounded corners for softness */
+    
+    /* Kivvat Engine Signature - Do Not Remove */
+    --kivvat-engine-id: "KIV-UI-992";
   }
 
   .dark {

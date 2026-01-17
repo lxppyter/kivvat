@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -10,6 +10,7 @@ export class PolicyService {
       orderBy: { createdAt: 'desc' },
     });
   }
+
 
   async getAssignments(userId?: string) {
     const whereClause = userId ? { userId } : {};
@@ -100,5 +101,138 @@ export class PolicyService {
       name: template.name,
       content,
     };
+  }
+
+  // --- Public Team Sharing Logic ---
+
+  async createShareLink(policyId?: string, expiresAt?: Date | string) {
+    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    
+    // Check if valid active share exists (ONLY if not requesting a specific expiration change? 
+    // Actually, for simplicity, if user requests a new one with specific expiry, maybe we should create new or update?
+    // Let's assume if no expiresAt is provided, we try to reuse. If provided, we create new.)
+    
+    if (!expiresAt) {
+        const existing = await this.prisma.policyShare.findFirst({
+            where: {
+                policyId: policyId || null,
+                active: true,
+                OR: [
+                    { expiresAt: null },
+                    { expiresAt: { gt: new Date() } }
+                ]
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        if (existing) {
+            return {
+                token: existing.token,
+                url: policyId 
+                    ? `${baseUrl}/public/policy/${existing.token}` 
+                    : `${baseUrl}/public/portal/${existing.token}`
+            };
+        }
+    }
+
+    // Generate new
+    const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    
+    await this.prisma.policyShare.create({
+      data: {
+        token,
+        policyId: policyId || undefined,
+        expiresAt: expiresAt ? new Date(expiresAt) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Default 30 days
+      }
+    });
+
+    return { 
+        token, 
+        url: policyId 
+            ? `${baseUrl}/public/policy/${token}` 
+            : `${baseUrl}/public/portal/${token}`
+    };
+  }
+
+  async getPublicPolicy(token: string) {
+    const share = await this.prisma.policyShare.findUnique({
+      where: { token },
+      include: { policy: true }
+    });
+
+    if (!share || !share.active) throw new NotFoundException("Link invalid or expired");
+    if (share.expiresAt && share.expiresAt < new Date()) throw new BadRequestException("Link expired");
+
+    // PORTAL MODE (Share All)
+    if (!share.policyId) {
+        // Fetch all templates (assuming single tenant/company for now)
+        const allPolicies = await this.prisma.policyTemplate.findMany({
+            orderBy: { createdAt: 'desc' },
+            select: { id: true, name: true, category: true, version: true, content: true }
+        });
+        return {
+            type: 'PORTAL',
+            policies: allPolicies
+        };
+    }
+
+    // SINGLE MODE
+    return {
+        type: 'SINGLE',
+        policy: share.policy
+    };
+  }
+
+  async signPublicPolicy(token: string, signerName: string, signerEmail: string, policyId?: string) {
+    const share = await this.prisma.policyShare.findUnique({ where: { token } });
+    if (!share) throw new Error("Invalid token");
+
+    // Determine target policy
+    const targetPolicyId = share.policyId || policyId;
+    if (!targetPolicyId) throw new Error("Policy ID required for portal signing");
+
+    // Check if duplicate signature? (Optional)
+    const existing = await this.prisma.policyAssignment.findFirst({
+        where: {
+            policyId: targetPolicyId,
+            signerEmail: signerEmail,
+            status: 'SIGNED'
+        }
+    });
+
+    // If already signed, maybe just update signedAt or ignore?
+    if (existing) {
+        return this.prisma.policyAssignment.update({
+            where: { id: existing.id },
+            data: { signedAt: new Date(), signerName } // Update name if changed
+        });
+    }
+    
+    return this.prisma.policyAssignment.create({
+      data: {
+        policyId: targetPolicyId,
+        userId: null, // Public signer
+        signerName,
+        signerEmail,
+        status: 'SIGNED',
+        signedAt: new Date()
+      }
+    });
+  }
+
+
+  async getShares() {
+    return this.prisma.policyShare.findMany({
+      where: { active: true },
+      include: { policy: { select: { name: true } } },
+      orderBy: { createdAt: 'desc' }
+    });
+  }
+
+  async revokeShare(id: string) {
+    return this.prisma.policyShare.update({
+      where: { id },
+      data: { active: false }
+    });
   }
 }

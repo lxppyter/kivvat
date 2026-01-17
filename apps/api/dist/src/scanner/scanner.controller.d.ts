@@ -6,10 +6,10 @@ export declare class ScannerController {
         id: string;
         createdAt: Date;
         status: string;
-        userId: string;
         provider: string;
         score: number;
         results: import("@prisma/client/runtime/client").JsonValue;
+        userId: string;
     }[]>;
     syncAssets(req: any, body: {
         credentials: any;
@@ -21,11 +21,11 @@ export declare class ScannerController {
         name: string;
         updatedAt: Date;
         status: string | null;
-        userId: string;
         details: import("@prisma/client/runtime/client").JsonValue | null;
+        region: string | null;
         type: string;
         provider: string;
-        region: string | null;
+        userId: string;
     }[]>;
     runScan(body: {
         provider: string;

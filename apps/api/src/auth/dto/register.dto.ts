@@ -15,6 +15,6 @@ export class RegisterDto {
     name?: string;
 
     @IsString()
-    @IsNotEmpty()
-    companyName: string;
+    @IsNotEmpty({ message: 'Şirket adı boş olamaz' })
+    company_name: string;
 }

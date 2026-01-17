@@ -22,7 +22,7 @@ export declare class AuthService {
         refresh_token: string;
     }>;
     updateRefreshToken(userId: string, refreshToken: string): Promise<void>;
-    getTokens(userId: string, email: string): Promise<{
+    getTokens(userId: string, email: string, role: string): Promise<{
         access_token: string;
         refresh_token: string;
     }>;
@@ -37,6 +37,18 @@ export declare class AuthService {
             startDate: Date;
             endDate: Date | null;
         } | null;
+        id: string;
+        name: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        email: string;
+        companyName: string | null;
+        role: string;
+    }>;
+    updateProfile(userId: string, dto: {
+        name?: string;
+        password?: string;
+    }): Promise<{
         id: string;
         name: string | null;
         createdAt: Date;

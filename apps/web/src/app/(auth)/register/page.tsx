@@ -34,7 +34,8 @@ export default function RegisterPage() {
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
-          name: formData.name, // Company is ignored for now as it's not in backend
+          name: formData.name,
+          company_name: formData.company,
         }),
       });
 

@@ -7,16 +7,20 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Save, Loader2 } from "lucide-react";
 import { auth } from "@/lib/api";
+import { toast } from "sonner";
 
 export default function SettingsPage() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [formData, setFormData] = useState({ name: "" });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const res = await auth.getProfile();
         setUser(res.data);
+        setFormData({ name: res.data.name });
       } catch (error) {
         console.error("Failed to fetch user profile", error);
       } finally {
@@ -25,6 +29,19 @@ export default function SettingsPage() {
     };
     fetchUser();
   }, []);
+
+  const handleSave = async () => {
+      setSaving(true);
+      try {
+          await auth.updateProfile(formData);
+          toast.success("Ayarlar başarıyla kaydedildi.");
+      } catch (e) {
+          console.error("Failed to save", e);
+          toast.error("Değişiklikler kaydedilemedi.");
+      } finally {
+          setSaving(false);
+      }
+  };
 
   if (loading) {
      return <div className="flex h-[50vh] items-center justify-center text-sm font-mono text-muted-foreground">
@@ -42,8 +59,8 @@ export default function SettingsPage() {
             Yapılandırma & Kullanıcı Tercihleri
           </p>
         </div>
-        <Button className="h-10 bg-primary text-primary-foreground font-mono text-xs font-semibold tracking-wide hover:bg-primary/90 rounded-lg shadow-sm">
-            <Save className="mr-2 h-3.5 w-3.5" />
+        <Button onClick={handleSave} disabled={saving} className="h-10 bg-primary text-primary-foreground font-mono text-xs font-semibold tracking-wide hover:bg-primary/90 rounded-lg shadow-sm">
+            {saving ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Save className="mr-2 h-3.5 w-3.5" />}
             Değişiklikleri Kaydet
         </Button>
       </div>
@@ -61,7 +78,8 @@ export default function SettingsPage() {
                      <Label className="text-xs font-semibold font-mono text-muted-foreground uppercase tracking-wide">Ad Soyad</Label>
                      <Input 
                         className="font-mono bg-background border-border/80 focus-visible:ring-primary rounded-lg h-11" 
-                        defaultValue={user?.name || ""} 
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         placeholder="Adınızı giriniz"
                      />
                  </div>

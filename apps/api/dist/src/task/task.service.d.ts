@@ -11,8 +11,8 @@ export declare class TaskService {
         updatedAt: Date;
         status: import("@prisma/client").$Enums.TaskStatus;
         title: string;
-        assigneeId: string | null;
         dueDate: Date | null;
+        assigneeId: string | null;
         gapAnalysisId: string | null;
     }>;
     createRemediationTask(gap: any): Promise<{
@@ -22,20 +22,20 @@ export declare class TaskService {
         updatedAt: Date;
         status: import("@prisma/client").$Enums.TaskStatus;
         title: string;
-        assigneeId: string | null;
         dueDate: Date | null;
+        assigneeId: string | null;
         gapAnalysisId: string | null;
     }>;
     findAll(): Promise<({
         gapAnalysis: ({
             control: {
                 id: string;
-                standardId: string;
-                code: string;
                 name: string;
                 description: string | null;
                 createdAt: Date;
                 updatedAt: Date;
+                standardId: string;
+                code: string;
             };
         } & {
             id: string;
@@ -58,8 +58,8 @@ export declare class TaskService {
         updatedAt: Date;
         status: import("@prisma/client").$Enums.TaskStatus;
         title: string;
-        assigneeId: string | null;
         dueDate: Date | null;
+        assigneeId: string | null;
         gapAnalysisId: string | null;
     })[]>;
     findOne(id: string): Promise<{
@@ -90,8 +90,8 @@ export declare class TaskService {
         updatedAt: Date;
         status: import("@prisma/client").$Enums.TaskStatus;
         title: string;
-        assigneeId: string | null;
         dueDate: Date | null;
+        assigneeId: string | null;
         gapAnalysisId: string | null;
     }>;
     update(id: string, dto: UpdateTaskDto): Promise<{
@@ -101,8 +101,8 @@ export declare class TaskService {
         updatedAt: Date;
         status: import("@prisma/client").$Enums.TaskStatus;
         title: string;
-        assigneeId: string | null;
         dueDate: Date | null;
+        assigneeId: string | null;
         gapAnalysisId: string | null;
     }>;
 }

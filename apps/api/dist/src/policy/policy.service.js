@@ -96,6 +96,112 @@ let PolicyService = class PolicyService {
             content,
         };
     }
+    async createShareLink(policyId, expiresAt) {
+        const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+        if (!expiresAt) {
+            const existing = await this.prisma.policyShare.findFirst({
+                where: {
+                    policyId: policyId || null,
+                    active: true,
+                    OR: [
+                        { expiresAt: null },
+                        { expiresAt: { gt: new Date() } }
+                    ]
+                },
+                orderBy: { createdAt: 'desc' }
+            });
+            if (existing) {
+                return {
+                    token: existing.token,
+                    url: policyId
+                        ? `${baseUrl}/public/policy/${existing.token}`
+                        : `${baseUrl}/public/portal/${existing.token}`
+                };
+            }
+        }
+        const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        await this.prisma.policyShare.create({
+            data: {
+                token,
+                policyId: policyId || undefined,
+                expiresAt: expiresAt ? new Date(expiresAt) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            }
+        });
+        return {
+            token,
+            url: policyId
+                ? `${baseUrl}/public/policy/${token}`
+                : `${baseUrl}/public/portal/${token}`
+        };
+    }
+    async getPublicPolicy(token) {
+        const share = await this.prisma.policyShare.findUnique({
+            where: { token },
+            include: { policy: true }
+        });
+        if (!share || !share.active)
+            throw new common_1.NotFoundException("Link invalid or expired");
+        if (share.expiresAt && share.expiresAt < new Date())
+            throw new common_1.BadRequestException("Link expired");
+        if (!share.policyId) {
+            const allPolicies = await this.prisma.policyTemplate.findMany({
+                orderBy: { createdAt: 'desc' },
+                select: { id: true, name: true, category: true, version: true, content: true }
+            });
+            return {
+                type: 'PORTAL',
+                policies: allPolicies
+            };
+        }
+        return {
+            type: 'SINGLE',
+            policy: share.policy
+        };
+    }
+    async signPublicPolicy(token, signerName, signerEmail, policyId) {
+        const share = await this.prisma.policyShare.findUnique({ where: { token } });
+        if (!share)
+            throw new Error("Invalid token");
+        const targetPolicyId = share.policyId || policyId;
+        if (!targetPolicyId)
+            throw new Error("Policy ID required for portal signing");
+        const existing = await this.prisma.policyAssignment.findFirst({
+            where: {
+                policyId: targetPolicyId,
+                signerEmail: signerEmail,
+                status: 'SIGNED'
+            }
+        });
+        if (existing) {
+            return this.prisma.policyAssignment.update({
+                where: { id: existing.id },
+                data: { signedAt: new Date(), signerName }
+            });
+        }
+        return this.prisma.policyAssignment.create({
+            data: {
+                policyId: targetPolicyId,
+                userId: null,
+                signerName,
+                signerEmail,
+                status: 'SIGNED',
+                signedAt: new Date()
+            }
+        });
+    }
+    async getShares() {
+        return this.prisma.policyShare.findMany({
+            where: { active: true },
+            include: { policy: { select: { name: true } } },
+            orderBy: { createdAt: 'desc' }
+        });
+    }
+    async revokeShare(id) {
+        return this.prisma.policyShare.update({
+            where: { id },
+            data: { active: false }
+        });
+    }
 };
 exports.PolicyService = PolicyService;
 exports.PolicyService = PolicyService = __decorate([

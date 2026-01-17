@@ -15,7 +15,7 @@ class RegisterDto {
     email;
     password;
     name;
-    companyName;
+    company_name;
 }
 exports.RegisterDto = RegisterDto;
 __decorate([
@@ -36,7 +36,7 @@ __decorate([
 ], RegisterDto.prototype, "name", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsNotEmpty)({ message: 'Şirket adı boş olamaz' }),
     __metadata("design:type", String)
-], RegisterDto.prototype, "companyName", void 0);
+], RegisterDto.prototype, "company_name", void 0);
 //# sourceMappingURL=register.dto.js.map

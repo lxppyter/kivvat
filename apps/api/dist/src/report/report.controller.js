@@ -30,6 +30,16 @@ let ReportController = class ReportController {
             res.status(500).send('Report generation failed');
         }
     }
+    async downloadZipBundle(id, res) {
+        try {
+            const filePath = await this.reportService.generateExportBundle(id);
+            res.download(filePath, `kivvat-audit-bundle-${id}.zip`);
+        }
+        catch (e) {
+            console.error('Zip Generation Failed', e);
+            res.status(500).send('Bundle generation failed');
+        }
+    }
 };
 exports.ReportController = ReportController;
 __decorate([
@@ -40,6 +50,14 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], ReportController.prototype, "downloadPdf", null);
+__decorate([
+    (0, common_1.Get)(':id/zip'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], ReportController.prototype, "downloadZipBundle", null);
 exports.ReportController = ReportController = __decorate([
     (0, common_1.Controller)('reports'),
     __metadata("design:paramtypes", [report_service_1.ReportService])

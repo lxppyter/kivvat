@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { CheckCircle2, Circle, Clock, Filter, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { tasks } from "@/lib/api";
+import Cookies from "js-cookie";
 
 interface Task {
   id: string;
@@ -28,6 +29,11 @@ interface Task {
 export default function TasksPage() {
   const [data, setData] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAuditor, setIsAuditor] = useState(false);
+
+  useEffect(() => {
+    setIsAuditor(Cookies.get("user_role") === "AUDITOR");
+  }, []);
 
   const fetchTasks = () => {
     setLoading(true);
@@ -54,8 +60,17 @@ export default function TasksPage() {
     switch (s) {
         case "RESOLVED": return <CheckCircle2 className="h-4 w-4 text-[#2DD4BF]" />;
         case "IN_PROGRESS": return <Clock className="h-4 w-4 text-blue-500" />;
-        default: return <Circle className="h-4 w-4 text-slate-300" />;
+        default: return <Circle className="h-4 w-4 text-rose-500" />;
     }
+  };
+
+  const getStatusLabel = (s: string) => {
+      switch (s) {
+          case "RESOLVED": return "ÇÖZÜLDÜ";
+          case "IN_PROGRESS": return "İŞLEMDE";
+          case "CLOSED": return "KAPALI";
+          default: return "AÇIK";
+      }
   };
 
   // User Request: Only show Active tasks (Hide RESOLVED/CLOSED)
@@ -88,10 +103,10 @@ export default function TasksPage() {
                     <tr>
                         <th className="px-6 py-4 text-xs font-semibold font-mono text-muted-foreground uppercase tracking-wide">Görev ID / Açıklama</th>
                         <th className="px-6 py-4 text-xs font-semibold font-mono text-muted-foreground uppercase tracking-wide">Kontrol</th>
-                        <th className="px-6 py-4 text-xs font-semibold font-mono text-muted-foreground uppercase tracking-wide">Atanan</th>
+                        <th className="px-6 py-4 text-xs font-semibold font-mono text-muted-foreground uppercase tracking-wide">Sorumlu</th>
                         <th className="px-6 py-4 text-xs font-semibold font-mono text-muted-foreground uppercase tracking-wide">Durum</th>
                         <th className="px-6 py-4 text-xs font-semibold font-mono text-muted-foreground uppercase tracking-wide text-right">Oluşturulma</th>
-                        <th className="px-6 py-4 text-xs font-semibold font-mono text-muted-foreground uppercase tracking-wide">İşlem</th>
+                        {!isAuditor && <th className="px-6 py-4 text-xs font-semibold font-mono text-muted-foreground uppercase tracking-wide">İşlem</th>}
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-border/60">
@@ -126,13 +141,15 @@ export default function TasksPage() {
                                         <span className="text-xs font-mono text-muted-foreground">{task.assignee.name || task.assignee.email}</span>
                                     </div>
                                 ) : (
-                                    <span className="text-xs font-mono text-muted-foreground italic">Atanmadı</span>
+                                    <span className="text-xs font-mono text-muted-foreground italic opacity-70">Havuz (Atanmamış)</span>
                                 )}
                             </td>
                             <td className="px-6 py-5">
                                 <div className="flex items-center gap-2">
                                     {getStatusIcon(task.status)}
-                                    <span className="text-xs font-mono font-bold uppercase tracking-wide text-foreground">{task.status}</span>
+                                    <span className={`text-xs font-mono font-bold uppercase tracking-wide ${task.status === 'RESOLVED' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                        {getStatusLabel(task.status)}
+                                    </span>
                                 </div>
                             </td>
                             <td className="px-6 py-5 text-right">
@@ -140,13 +157,16 @@ export default function TasksPage() {
                                     {new Date(task.createdAt).toLocaleDateString('tr-TR')}
                                 </span>
                             </td>
-                            <td className="px-6 py-5 text-right">
-                                <Button size="sm" variant="outline" className="h-8 text-xs font-mono font-medium uppercase bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 hover:text-emerald-800 rounded-lg w-full shadow-sm"
-                                    onClick={() => handleComplete(task.id)}
-                                >
-                                    Çözüldü
-                                </Button>
-                            </td>
+                            {!isAuditor && (
+                                <td className="px-6 py-5 text-right">
+                                    <Button size="sm" variant="outline" className="h-8 text-xs font-mono font-medium uppercase border-dashed border-border hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 transition-colors rounded-lg w-full shadow-sm"
+                                        onClick={() => handleComplete(task.id)}
+                                    >
+                                        <CheckCircle2 className="mr-2 h-3.5 w-3.5" />
+                                        Çözüldü İşaretle
+                                    </Button>
+                                </td>
+                            )}
                         </tr>
                     ))}
                 </tbody>

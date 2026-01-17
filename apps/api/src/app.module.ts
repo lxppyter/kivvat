@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
@@ -16,6 +16,9 @@ import { ScannerModule } from './scanner/scanner.module';
 import { PolicyModule } from './policy/policy.module';
 
 import { AssetModule } from './asset/asset.module';
+import { AuditModule } from './audit/audit.module';
+import { AuditorReadOnlyGuard } from './common/guards/auditor-readonly.guard';
+import { WatermarkMiddleware } from './common/middleware/watermark.middleware';
 
 @Module({
   imports: [
@@ -32,8 +35,8 @@ import { AssetModule } from './asset/asset.module';
     AnalysisModule,
     TaskModule,
     ReportModule,
-    PrismaModule,
-    AuthModule,
+    TaskModule,
+    ReportModule,
     PrismaModule,
     AuthModule,
     ComplianceModule,
@@ -41,6 +44,7 @@ import { AssetModule } from './asset/asset.module';
     ScannerModule,
     PolicyModule,
     AssetModule,
+    AuditModule,
   ],
   controllers: [AppController],
   providers: [
@@ -49,6 +53,16 @@ import { AssetModule } from './asset/asset.module';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
+    {
+      provide: APP_GUARD,
+      useClass: AuditorReadOnlyGuard,
+    },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(WatermarkMiddleware)
+      .forRoutes('*');
+  }
+}
