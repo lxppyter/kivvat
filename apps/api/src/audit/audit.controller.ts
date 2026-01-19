@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Delete, Param, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Body, Get, Delete, Param, UseGuards, Request, ForbiddenException } from '@nestjs/common';
 import { AuditService } from './audit.service';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -9,6 +9,9 @@ export class AuditController {
   @UseGuards(AuthGuard('jwt'))
   @Post('share')
   async createShareLink(@Request() req: any, @Body() body: { name: string, hours?: number }) {
+    if (req.user.plan !== 'ENTERPRISE') {
+        throw new ForbiddenException('Bu özellik sadece ENTERPRISE pakette mevcuttur.');
+    }
     return this.auditService.createShareLink(
         req.user.userId, 
         body.name || 'Auditor Access', 

@@ -16,6 +16,7 @@ exports.ScannerController = void 0;
 const common_1 = require("@nestjs/common");
 const scanner_service_1 = require("./scanner.service");
 const passport_1 = require("@nestjs/passport");
+const subscription_guard_1 = require("../common/guards/subscription.guard");
 let ScannerController = class ScannerController {
     scannerService;
     constructor(scannerService) {
@@ -33,10 +34,11 @@ let ScannerController = class ScannerController {
     async runScan(body, req) {
         console.log('User in Controller:', req.user);
         const userId = req.user?.userId;
+        const plan = req.user?.plan || 'FREE';
         if (!userId)
             throw new Error('User ID missing from request');
         const creds = body.credentials || {};
-        return this.scannerService.runScan(body.provider, creds, userId);
+        return this.scannerService.runScan(body.provider, creds, userId, plan);
     }
 };
 exports.ScannerController = ScannerController;
@@ -71,7 +73,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], ScannerController.prototype, "runScan", null);
 exports.ScannerController = ScannerController = __decorate([
-    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), subscription_guard_1.SubscriptionGuard),
     (0, common_1.Controller)('scanner'),
     __metadata("design:paramtypes", [scanner_service_1.ScannerService])
 ], ScannerController);

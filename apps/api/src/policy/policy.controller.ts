@@ -2,6 +2,7 @@ import { Controller, Get, Post, Delete, Body, Param, UseGuards, Request, Inject,
 import { PolicyService } from './policy.service';
 import { AuthGuard } from '@nestjs/passport'; // Use standard guard
 import { PrismaService } from '../prisma/prisma.service';
+import { SubscriptionGuard } from '../common/guards/subscription.guard';
 
 @Controller('policies')
 export class PolicyController {
@@ -11,31 +12,31 @@ export class PolicyController {
   ) {}
 
   @Get('templates')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), SubscriptionGuard)
   async getTemplates() {
     return this.policyService.getTemplates();
   }
 
   @Get('assignments')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), SubscriptionGuard)
   async getAssignments(@Query('userId') userId?: string) {
     return this.policyService.getAssignments(userId);
   }
   
   @Get('download/:id')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), SubscriptionGuard)
   async downloadTemplate(@Param('id') id: string, @Query('companyName') companyName: string) {
     return this.policyService.downloadTemplate(id, companyName || 'ACME Corp');
   }
 
   @Post('sign/:id')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), SubscriptionGuard)
   async signPolicy(@Param('id') id: string) {
     return this.policyService.signPolicy(id);
   }
 
   @Get('signatures')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), SubscriptionGuard)
   async getSignaturesStatus() {
       // Logic: Get all users and their policy assignments
       const users = await this.prisma.user.findMany({
@@ -104,38 +105,38 @@ export class PolicyController {
   }
 
   @Post(':id') 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), SubscriptionGuard)
   async updatePolicy(@Param('id') id: string, @Body('content') content: string) {
     return this.policyService.updatePolicy(id, content);
   }
 
   @Get(':id/history')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), SubscriptionGuard)
   async getHistory(@Param('id') id: string) {
     return this.policyService.getHistory(id);
   }
   
   // --- SHARE ENDPOINTS (Protected) ---
   @Get('shares')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), SubscriptionGuard)
   async getShares() {
       return this.policyService.getShares();
   }
 
   @Delete('share/:id') 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), SubscriptionGuard)
   async revokeShare(@Param('id') id: string) {
       return this.policyService.revokeShare(id);
   }
 
   @Post('share/all')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), SubscriptionGuard)
   async createShareAllLink(@Body() body: { expiresAt?: string }) {
       return this.policyService.createShareLink(undefined, body?.expiresAt);
   }
 
   @Post(':id/share')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), SubscriptionGuard)
   async createShareLink(@Param('id') id: string, @Body() body: { expiresAt?: string }) {
       return this.policyService.createShareLink(id, body?.expiresAt);
   }

@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const policy_service_1 = require("./policy.service");
 const passport_1 = require("@nestjs/passport");
 const prisma_service_1 = require("../prisma/prisma.service");
+const subscription_guard_1 = require("../common/guards/subscription.guard");
 let PolicyController = class PolicyController {
     policyService;
     prisma;
@@ -114,14 +115,14 @@ let PolicyController = class PolicyController {
 exports.PolicyController = PolicyController;
 __decorate([
     (0, common_1.Get)('templates'),
-    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), subscription_guard_1.SubscriptionGuard),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], PolicyController.prototype, "getTemplates", null);
 __decorate([
     (0, common_1.Get)('assignments'),
-    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), subscription_guard_1.SubscriptionGuard),
     __param(0, (0, common_1.Query)('userId')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -129,7 +130,7 @@ __decorate([
 ], PolicyController.prototype, "getAssignments", null);
 __decorate([
     (0, common_1.Get)('download/:id'),
-    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), subscription_guard_1.SubscriptionGuard),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Query)('companyName')),
     __metadata("design:type", Function),
@@ -138,7 +139,7 @@ __decorate([
 ], PolicyController.prototype, "downloadTemplate", null);
 __decorate([
     (0, common_1.Post)('sign/:id'),
-    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), subscription_guard_1.SubscriptionGuard),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -146,14 +147,14 @@ __decorate([
 ], PolicyController.prototype, "signPolicy", null);
 __decorate([
     (0, common_1.Get)('signatures'),
-    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), subscription_guard_1.SubscriptionGuard),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], PolicyController.prototype, "getSignaturesStatus", null);
 __decorate([
     (0, common_1.Post)(':id'),
-    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), subscription_guard_1.SubscriptionGuard),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)('content')),
     __metadata("design:type", Function),
@@ -162,7 +163,7 @@ __decorate([
 ], PolicyController.prototype, "updatePolicy", null);
 __decorate([
     (0, common_1.Get)(':id/history'),
-    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), subscription_guard_1.SubscriptionGuard),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -170,14 +171,14 @@ __decorate([
 ], PolicyController.prototype, "getHistory", null);
 __decorate([
     (0, common_1.Get)('shares'),
-    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), subscription_guard_1.SubscriptionGuard),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], PolicyController.prototype, "getShares", null);
 __decorate([
     (0, common_1.Delete)('share/:id'),
-    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), subscription_guard_1.SubscriptionGuard),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -185,7 +186,7 @@ __decorate([
 ], PolicyController.prototype, "revokeShare", null);
 __decorate([
     (0, common_1.Post)('share/all'),
-    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), subscription_guard_1.SubscriptionGuard),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -193,7 +194,7 @@ __decorate([
 ], PolicyController.prototype, "createShareAllLink", null);
 __decorate([
     (0, common_1.Post)(':id/share'),
-    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), subscription_guard_1.SubscriptionGuard),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),

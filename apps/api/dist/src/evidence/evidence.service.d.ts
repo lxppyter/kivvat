@@ -5,8 +5,8 @@ export declare class EvidenceService {
     private reportService;
     constructor(prisma: PrismaService, reportService: ReportService);
     collectEvidence(provider: string): Promise<{
-        id: string;
         result: import("@prisma/client/runtime/client").JsonValue;
+        id: string;
         source: string;
         resourceId: string | null;
         checkName: string;
@@ -16,16 +16,16 @@ export declare class EvidenceService {
     getHistory(controlId: string): Promise<({
         gaps: {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
             status: import("@prisma/client").$Enums.ComplianceStatus;
+            createdAt: Date;
             details: string | null;
+            updatedAt: Date;
             controlId: string;
             evidenceId: string;
         }[];
     } & {
-        id: string;
         result: import("@prisma/client/runtime/client").JsonValue;
+        id: string;
         source: string;
         resourceId: string | null;
         checkName: string;
@@ -37,32 +37,32 @@ export declare class EvidenceService {
             control: {
                 standard: {
                     id: string;
-                    name: string;
-                    description: string | null;
                     createdAt: Date;
+                    name: string;
                     updatedAt: Date;
+                    description: string | null;
                 };
             } & {
                 id: string;
-                name: string;
-                description: string | null;
                 createdAt: Date;
+                name: string;
                 updatedAt: Date;
                 standardId: string;
                 code: string;
+                description: string | null;
             };
         } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
             status: import("@prisma/client").$Enums.ComplianceStatus;
+            createdAt: Date;
             details: string | null;
+            updatedAt: Date;
             controlId: string;
             evidenceId: string;
         })[];
     } & {
-        id: string;
         result: import("@prisma/client/runtime/client").JsonValue;
+        id: string;
         source: string;
         resourceId: string | null;
         checkName: string;

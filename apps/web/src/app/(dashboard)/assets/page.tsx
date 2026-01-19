@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import { assets } from "@/lib/api";
-import { Server, RefreshCw, Loader2, Database, HardDrive, Shield, Laptop, Network, Cloud, Plus, Smartphone, AppWindow, Calendar, FileSpreadsheet, Pencil, Trash, MoreHorizontal, AlertTriangle } from "lucide-react";
+import api from "@/lib/api";
+import { Server, RefreshCw, Loader2, Database, HardDrive, Shield, Laptop, Network, Cloud, Plus, Smartphone, AppWindow, Calendar, FileSpreadsheet, Pencil, Trash, MoreHorizontal, AlertTriangle, Globe, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +32,12 @@ export default function AssetsPage() {
       licenseKey: '', licenseExpiry: ''
   });
   const [creating, setCreating] = useState(false);
+  
+  // SSL Monitor State
+  const [sslDomain, setSslDomain] = useState("");
+  const [sslCheckResult, setSslCheckResult] = useState<any>(null);
+  const [sslLoading, setSslLoading] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -229,6 +236,21 @@ export default function AssetsPage() {
       reader.readAsBinaryString(file);
       // Reset input manually so same file can be selected again if needed
       if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleSslCheck = async () => {
+      if (!sslDomain) return;
+      setSslLoading(true);
+      setSslCheckResult(null);
+      try {
+          const res = await api.get(`/ssl/check/${encodeURIComponent(sslDomain)}`);
+          setSslCheckResult(res.data);
+      } catch (e: any) {
+          console.error(e);
+          alert(e.response?.data?.message || "SSL Kontrolü başarısız.");
+      } finally {
+          setSslLoading(false);
+      }
   };
 
   const getIcon = (type: string) => {
@@ -443,97 +465,170 @@ export default function AssetsPage() {
       </div>
 
       {/* ASSET TABLE */}
-      <div className="border border-border bg-card rounded-xl shadow-sm overflow-hidden">
-        <table className="w-full text-left">
-            <thead className="bg-muted/40 border-b border-border">
-                <tr>
-                    <th className="px-6 py-4 text-xs font-semibold font-mono text-muted-foreground uppercase tracking-wide">Varlık / Yazılım</th>
-                    <th className="px-6 py-4 text-xs font-semibold font-mono text-muted-foreground uppercase tracking-wide">Tür</th>
-                    <th className="px-6 py-4 text-xs font-semibold font-mono text-muted-foreground uppercase tracking-wide">Detaylar</th>
-                    <th className="px-6 py-4 text-xs font-semibold font-mono text-muted-foreground uppercase tracking-wide">Güvenlik / Durum</th>
-                    <th className="px-6 py-4 text-xs font-semibold font-mono text-muted-foreground uppercase tracking-wide text-right">Statü</th>
-                    {!isAuditor && <th className="w-[50px]"></th>}
-                </tr>
-            </thead>
-            <tbody className="divide-y divide-border/60">
-                {loading ? (
-                     <tr>
-                        <td colSpan={6} className="p-8 text-center text-muted-foreground font-mono">
-                            <Loader2 className="mx-auto h-6 w-6 animate-spin mb-2" />
-                            Envanter yükleniyor...
-                        </td>
-                     </tr>
-                ) : items.length === 0 ? (
-                    <tr>
-                        <td colSpan={6} className="p-12 text-center text-muted-foreground font-mono">
-                            <Database className="mx-auto h-8 w-8 text-muted-foreground/50 mb-3" />
-                            Henüz kayıt bulunamadı.
-                        </td>
-                    </tr>
-                ) : (
-                    items.map((asset) => (
-                    <tr key={asset.id} className="group hover:bg-muted/30 transition-colors">
-                        <td className="px-6 py-4">
-                            <div className="flex items-center gap-3">
-                                {getIcon(asset.type)}
-                                <div className="flex flex-col">
-                                    <span className="font-bold font-mono text-sm text-foreground">{asset.name}</span>
-                                    {asset.details?.ip && <span className="text-[10px] text-muted-foreground font-mono">IP: {asset.details.ip}</span>}
-                                    {asset.details?.serialNumber && <span className="text-[10px] text-muted-foreground font-mono">S/N: {asset.details.serialNumber}</span>}
-                                    {asset.details?.licenseKey && <span className="text-[10px] text-muted-foreground font-mono">Lic: ****-{asset.details.licenseKey.slice(-4)}</span>}
-                                </div>
-                            </div>
-                        </td>
-                        <td className="px-6 py-4 text-xs font-mono text-muted-foreground font-medium">
-                            {asset.type.replace('_', ' ')}
-                            {asset.type === 'SOFTWARE_LICENSE' && asset.details?.licenseExpiry && (
-                                <div className="flex items-center text-[10px] mt-1 text-red-400">
-                                    <Calendar className="h-3 w-3 mr-1" />
-                                    Exp: {asset.details.licenseExpiry}
-                                </div>
-                            )}
-                        </td>
-                         <td className="px-6 py-4 text-xs font-mono text-muted-foreground">
-                            {asset.details?.assignedTo ? (
-                                <span className="flex items-center gap-1">User: <span className="text-foreground">{asset.details.assignedTo}</span></span>
-                            ) : asset.provider}
-                        </td>
-                        <td className="px-6 py-4 text-xs font-mono text-muted-foreground">
-                            <div className="flex gap-2">
-                                {asset.details?.bitlocker && <Badge variant="outline" className="text-[10px] border-blue-500/30 text-blue-500 h-5">Full Disk Encrypted</Badge>}
-                                {asset.details?.antivirus && <Badge variant="outline" className="text-[10px] border-emerald-500/30 text-emerald-500 h-5">AV Protected</Badge>}
-                            </div>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                             <span className={`inline-flex items-center px-2 py-0.5 text-[10px] font-bold font-mono rounded-full border ${getStatusColor(asset.status)}`}>
-                                 {asset.status}
-                             </span>
-                        </td>
-                        {!isAuditor && (
-                        <td className="px-6 py-4">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="h-8 w-8 p-0">
-                                        <span className="sr-only">Open menu</span>
-                                        <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => handleEdit(asset)}>
-                                        <Pencil className="mr-2 h-4 w-4" /> Düzenle
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem className="text-red-500 focus:text-red-500" onClick={() => handleDelete(asset.id)}>
-                                        <Trash className="mr-2 h-4 w-4" /> Sil
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </td>
-                        )}
-                    </tr>
-                )))}
-            </tbody>
-        </table>
-      </div>
+
+
+      <Tabs defaultValue="inventory" className="w-full">
+          <TabsList className="grid w-full md:w-[400px] grid-cols-2 mb-4">
+              <TabsTrigger value="inventory">Envanter Listesi</TabsTrigger>
+              <TabsTrigger value="certificates">Sertifika Kontrolü (Beta)</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="inventory">
+              <div className="border border-border bg-card rounded-xl shadow-sm overflow-hidden">
+                <table className="w-full text-left">
+                    <thead className="bg-muted/40 border-b border-border">
+                        <tr>
+                            <th className="px-6 py-4 text-xs font-semibold font-mono text-muted-foreground uppercase tracking-wide">Varlık / Yazılım</th>
+                            <th className="px-6 py-4 text-xs font-semibold font-mono text-muted-foreground uppercase tracking-wide">Tür</th>
+                            <th className="px-6 py-4 text-xs font-semibold font-mono text-muted-foreground uppercase tracking-wide">Detaylar</th>
+                            <th className="px-6 py-4 text-xs font-semibold font-mono text-muted-foreground uppercase tracking-wide">Güvenlik / Durum</th>
+                            <th className="px-6 py-4 text-xs font-semibold font-mono text-muted-foreground uppercase tracking-wide text-right">Statü</th>
+                            {!isAuditor && <th className="w-[50px]"></th>}
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/60">
+                        {loading ? (
+                            <tr>
+                                <td colSpan={6} className="p-8 text-center text-muted-foreground font-mono">
+                                    <Loader2 className="mx-auto h-6 w-6 animate-spin mb-2" />
+                                    Envanter yükleniyor...
+                                </td>
+                            </tr>
+                        ) : items.length === 0 ? (
+                            <tr>
+                                <td colSpan={6} className="p-12 text-center text-muted-foreground font-mono">
+                                    <Database className="mx-auto h-8 w-8 text-muted-foreground/50 mb-3" />
+                                    Henüz kayıt bulunamadı.
+                                </td>
+                            </tr>
+                        ) : (
+                            items.map((asset) => (
+                            <tr key={asset.id} className="group hover:bg-muted/30 transition-colors">
+                                <td className="px-6 py-4">
+                                    <div className="flex items-center gap-3">
+                                        {getIcon(asset.type)}
+                                        <div className="flex flex-col">
+                                            <span className="font-bold font-mono text-sm text-foreground">{asset.name}</span>
+                                            {asset.details?.ip && <span className="text-[10px] text-muted-foreground font-mono">IP: {asset.details.ip}</span>}
+                                            {asset.details?.serialNumber && <span className="text-[10px] text-muted-foreground font-mono">S/N: {asset.details.serialNumber}</span>}
+                                            {asset.details?.licenseKey && <span className="text-[10px] text-muted-foreground font-mono">Lic: ****-{asset.details.licenseKey.slice(-4)}</span>}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td className="px-6 py-4 text-xs font-mono text-muted-foreground font-medium">
+                                    {asset.type.replace('_', ' ')}
+                                    {asset.type === 'SOFTWARE_LICENSE' && asset.details?.licenseExpiry && (
+                                        <div className="flex items-center text-[10px] mt-1 text-red-400">
+                                            <Calendar className="h-3 w-3 mr-1" />
+                                            Exp: {asset.details.licenseExpiry}
+                                        </div>
+                                    )}
+                                </td>
+                                <td className="px-6 py-4 text-xs font-mono text-muted-foreground">
+                                    {asset.details?.assignedTo ? (
+                                        <span className="flex items-center gap-1">User: <span className="text-foreground">{asset.details.assignedTo}</span></span>
+                                    ) : asset.provider}
+                                </td>
+                                <td className="px-6 py-4 text-xs font-mono text-muted-foreground">
+                                    <div className="flex gap-2">
+                                        {asset.details?.bitlocker && <Badge variant="outline" className="text-[10px] border-blue-500/30 text-blue-500 h-5">Full Disk Encrypted</Badge>}
+                                        {asset.details?.antivirus && <Badge variant="outline" className="text-[10px] border-emerald-500/30 text-emerald-500 h-5">AV Protected</Badge>}
+                                    </div>
+                                </td>
+                                <td className="px-6 py-4 text-right">
+                                    <span className={`inline-flex items-center px-2 py-0.5 text-[10px] font-bold font-mono rounded-full border ${getStatusColor(asset.status)}`}>
+                                        {asset.status}
+                                    </span>
+                                </td>
+                                {!isAuditor && (
+                                <td className="px-6 py-4">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" className="h-8 w-8 p-0">
+                                                <span className="sr-only">Open menu</span>
+                                                <MoreHorizontal className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onClick={() => handleEdit(asset)}>
+                                                <Pencil className="mr-2 h-4 w-4" /> Düzenle
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem className="text-red-500 focus:text-red-500" onClick={() => handleDelete(asset.id)}>
+                                                <Trash className="mr-2 h-4 w-4" /> Sil
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </td>
+                                )}
+                            </tr>
+                        )))}
+                    </tbody>
+                </table>
+              </div>
+          </TabsContent>
+          
+          <TabsContent value="certificates">
+              <div className="border border-border bg-card rounded-xl shadow-sm p-6 space-y-6">
+                 <div>
+                    <h3 className="text-lg font-bold font-mono flex items-center gap-2">
+                        <Lock className="h-5 w-5 text-emerald-500" />
+                        SSL/TLS Sertifika Sorgulama
+                    </h3>
+                    <p className="text-sm text-muted-foreground font-mono mt-1">
+                        Domain adresini girerek sertifika geçerlilik süresini ve sağlayıcıyı kontrol edin.
+                    </p>
+                 </div>
+
+                 <div className="flex gap-4 items-end max-w-xl">
+                    <div className="grid w-full gap-2">
+                        <Label htmlFor="domain" className="font-mono text-xs">Domain (Örn: google.com)</Label>
+                        <Input 
+                            id="domain" 
+                            placeholder="example.com" 
+                            value={sslDomain} 
+                            onChange={(e) => setSslDomain(e.target.value)} 
+                            className="font-mono"
+                        />
+                    </div>
+                    <Button onClick={handleSslCheck} disabled={sslLoading || !sslDomain} className="font-mono">
+                        {sslLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        SORGULA
+                    </Button>
+                 </div>
+
+                 {sslCheckResult && (
+                     <div className="mt-6 border border-border/60 rounded-lg p-4 bg-muted/20 animate-in fade-in duration-300">
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                             <div>
+                                 <Label className="text-xs text-muted-foreground font-mono uppercase">Domain</Label>
+                                 <div className="text-lg font-bold font-mono text-foreground flex items-center gap-2">
+                                     <Globe className="h-4 w-4 text-blue-500" />
+                                     {sslCheckResult.domain}
+                                 </div>
+                             </div>
+                             <div>
+                                 <Label className="text-xs text-muted-foreground font-mono uppercase">Oluşturan (Issuer)</Label>
+                                 <div className="text-sm font-semibold font-mono text-foreground">{sslCheckResult.issuer}</div>
+                             </div>
+                             <div>
+                                 <Label className="text-xs text-muted-foreground font-mono uppercase">Kalan Süre</Label>
+                                 <div className={`text-2xl font-bold font-mono ${sslCheckResult.daysRemaining < 30 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                                     {sslCheckResult.daysRemaining} Gün
+                                 </div>
+                             </div>
+                             <div>
+                                 <Label className="text-xs text-muted-foreground font-mono uppercase">Geçerlilik Tarihleri</Label>
+                                 <div className="text-xs font-mono text-muted-foreground mt-1">
+                                     <div>Başlangıç: {new Date(sslCheckResult.validFrom).toLocaleDateString()}</div>
+                                     <div>Bitiş: {new Date(sslCheckResult.validTo).toLocaleDateString()}</div>
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+                 )}
+              </div>
+          </TabsContent>
+      </Tabs>
     </div>
   );
 }

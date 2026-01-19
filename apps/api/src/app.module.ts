@@ -14,6 +14,10 @@ import { ComplianceModule } from './compliance/compliance.module';
 import { CloudModule } from './cloud/cloud.module';
 import { ScannerModule } from './scanner/scanner.module';
 import { PolicyModule } from './policy/policy.module';
+import { IncidentModule } from './incident/incident.module';
+import { SslModule } from './ssl/ssl.module';
+import { VendorModule } from './vendor/vendor.module';
+import { PaymentModule } from './payment/payment.module';
 
 import { AssetModule } from './asset/asset.module';
 import { AuditModule } from './audit/audit.module';
@@ -43,6 +47,10 @@ import { WatermarkMiddleware } from './common/middleware/watermark.middleware';
     CloudModule,
     ScannerModule,
     PolicyModule,
+    IncidentModule,
+    SslModule,
+    VendorModule,
+    PaymentModule,
     AssetModule,
     AuditModule,
   ],

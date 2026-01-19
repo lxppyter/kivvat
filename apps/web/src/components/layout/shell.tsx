@@ -35,7 +35,7 @@ export function Shell({ children, className, ...props }: ShellProps) {
           <Sidebar />
           <div className="flex-1 ml-64 flex flex-col">
             <Header />
-            <main className={cn("flex-1 overflow-y-auto p-8 md:p-12", className)} {...props}>
+            <main className={cn("flex-1 p-8 md:p-12", className)} {...props}>
                 <div className="mx-auto max-w-6xl space-y-8">
                     {children}
                 </div>

@@ -20,6 +20,19 @@ enum TaskStatus {
   CLOSED
 }
 
+enum Role {
+  STAFF
+  ADMIN
+  AUDITOR
+}
+
+enum Plan {
+  FREE
+  CORE
+  PRO
+  ENTERPRISE
+}
+
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -27,10 +40,16 @@ model User {
   hashedRefreshToken String? @map("hashed_refresh_token")
   name              String?
   companyName       String?  @map("company_name")
-  role      String   @default("STAFF") // ADMIN, AUDITOR, STAFF
+  role      Role     @default(STAFF)
+  plan      Plan     @default(FREE)
+  licenseKey String? @unique @map("license_key")
+  licenseExpiresAt DateTime? @map("license_expires_at")
+  subscriptionStatus String? @map("subscription_status") // 'active', 'cancelled', 'refunded'
   reports   ScanReport[]
   assets    Asset[]
   tasks     Task[]
+  incidents Incident[]
+  vendors   Vendor[]
   policyAssignments PolicyAssignment[]
   auditShares AuditShare[]
   subscription Subscription?
@@ -44,7 +63,7 @@ model Subscription {
   id        String   @id @default(uuid())
   userId    String   @unique @map("user_id")
   user      User     @relation(fields: [userId], references: [id])
-  plan      String   @default("COMPLIANCE CORE") // COMPLIANCE CORE, TRUST ARCHITECT, TOTAL AUTHORITY, CERTIFICATION FAST-TRACK
+  plan      String   @default("FREE") // FREE, COMPLIANCE CORE, TRUST ARCHITECT, TOTAL AUTHORITY
   status    String   @default("ACTIVE") // ACTIVE, CANCELED, EXPIRED
   
   startDate DateTime @default(now()) @map("start_date")
@@ -233,4 +252,39 @@ model AuditShare {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("audit_shares")
+}
+
+model Incident {
+  id          String   @id @default(uuid())
+  title       String
+  description String   @db.Text
+  severity    String   // CRITICAL, HIGH, MEDIUM, LOW
+  status      String   @default("OPEN") // OPEN, INVESTIGATING, RESOLVED, FALSE_POSITIVE
+  source      String   @default("MANUAL") // MANUAL, AUTOMATED
+  userId      String   @map("user_id")
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt      @map("updated_at")
+
+  @@map("incidents")
+
+}
+
+model Vendor {
+  id          String   @id @default(uuid())
+  name        String
+  contactName String?  @map("contact_name")
+  email       String?
+  riskScore   String   @default("LOW") // LOW, MEDIUM, HIGH, CRITICAL
+  hasIso27001 Boolean  @default(false) @map("has_iso27001")
+  hasSoc2     Boolean  @default(false) @map("has_soc2")
+  hasGdpr     Boolean  @default(false) @map("has_gdpr")
+
+  userId      String   @map("user_id")
+  user        User     @relation(fields: [userId], references: [id])
+
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt      @map("updated_at")
+
+  @@map("vendors")
 }

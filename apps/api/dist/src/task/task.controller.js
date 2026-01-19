@@ -18,6 +18,7 @@ const task_service_1 = require("./task.service");
 const create_task_dto_1 = require("./dto/create-task.dto");
 const update_task_dto_1 = require("./dto/update-task.dto");
 const passport_1 = require("@nestjs/passport");
+const subscription_guard_1 = require("../common/guards/subscription.guard");
 let TaskController = class TaskController {
     taskService;
     constructor(taskService) {
@@ -66,7 +67,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], TaskController.prototype, "update", null);
 exports.TaskController = TaskController = __decorate([
-    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), subscription_guard_1.SubscriptionGuard),
     (0, common_1.Controller)('tasks'),
     __metadata("design:paramtypes", [task_service_1.TaskService])
 ], TaskController);

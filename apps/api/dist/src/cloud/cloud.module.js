@@ -13,11 +13,13 @@ const cloud_controller_1 = require("./cloud.controller");
 const aws_provider_1 = require("./providers/aws.provider");
 const azure_provider_1 = require("./providers/azure.provider");
 const gcp_provider_1 = require("./providers/gcp.provider");
+const asset_module_1 = require("../asset/asset.module");
 let CloudModule = class CloudModule {
 };
 exports.CloudModule = CloudModule;
 exports.CloudModule = CloudModule = __decorate([
     (0, common_1.Module)({
+        imports: [asset_module_1.AssetModule],
         controllers: [cloud_controller_1.CloudController],
         providers: [cloud_service_1.CloudService, aws_provider_1.AwsProvider, azure_provider_1.AzureProvider, gcp_provider_1.GcpProvider],
         exports: [cloud_service_1.CloudService],

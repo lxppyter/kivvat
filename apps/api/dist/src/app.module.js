@@ -23,6 +23,10 @@ const compliance_module_1 = require("./compliance/compliance.module");
 const cloud_module_1 = require("./cloud/cloud.module");
 const scanner_module_1 = require("./scanner/scanner.module");
 const policy_module_1 = require("./policy/policy.module");
+const incident_module_1 = require("./incident/incident.module");
+const ssl_module_1 = require("./ssl/ssl.module");
+const vendor_module_1 = require("./vendor/vendor.module");
+const payment_module_1 = require("./payment/payment.module");
 const asset_module_1 = require("./asset/asset.module");
 const audit_module_1 = require("./audit/audit.module");
 const auditor_readonly_guard_1 = require("./common/guards/auditor-readonly.guard");
@@ -59,6 +63,10 @@ exports.AppModule = AppModule = __decorate([
             cloud_module_1.CloudModule,
             scanner_module_1.ScannerModule,
             policy_module_1.PolicyModule,
+            incident_module_1.IncidentModule,
+            ssl_module_1.SslModule,
+            vendor_module_1.VendorModule,
+            payment_module_1.PaymentModule,
             asset_module_1.AssetModule,
             audit_module_1.AuditModule,
         ],

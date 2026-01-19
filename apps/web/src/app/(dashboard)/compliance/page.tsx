@@ -2,9 +2,14 @@
 
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
-import { ShieldCheck, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { ShieldCheck, CheckCircle2, AlertCircle, Loader2, ChevronDown, ChevronUp, Lightbulb } from "lucide-react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 import { ScanDialog } from "@/components/dashboard/scan-dialog";
 
@@ -13,21 +18,26 @@ export default function CompliancePage() {
   const [results, setResults] = useState<any[]>([]);
   const [isAuditor, setIsAuditor] = useState(false);
   const [scanDialogOpen, setScanDialogOpen] = useState(false);
+  const [userPlan, setUserPlan] = useState<string | null>(null);
 
   useEffect(() => {
     setIsAuditor(Cookies.get("user_role") === "AUDITOR");
-    // Initial fetch of latest results
-    fetchLatestResults();
+    fetchData();
   }, []);
 
-  const fetchLatestResults = async () => {
+  const fetchData = async () => {
       try {
-          const res = await api.get('/scanner/reports');
-          if (res.data && res.data.length > 0) {
-              setResults(res.data[0].results);
+          const [reportsRes, profileRes] = await Promise.all([
+             api.get('/scanner/reports'),
+             api.get('/auth/me')
+          ]);
+
+          if (reportsRes.data && reportsRes.data.length > 0) {
+              setResults(reportsRes.data[0].results);
           }
+          setUserPlan(profileRes.data.plan);
       } catch (e) {
-          console.error("Failed to fetch history", e);
+          console.error("Failed to fetch data", e);
       }
   };
 
@@ -78,6 +88,7 @@ export default function CompliancePage() {
         onOpenChange={setScanDialogOpen} 
         onScan={handleScanStart}
         loading={loading}
+        userPlan={userPlan}
       />
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -114,34 +125,75 @@ export default function CompliancePage() {
                  </tr>
               )}
               {results.map((item, i) => (
-                <tr key={i} className="hover:bg-muted/30 transition-colors group">
-                  <td className="px-6 py-4 font-mono font-medium text-foreground">{item.ruleId}</td>
-                  <td className="px-6 py-4 font-mono text-muted-foreground">{item.resourceId}</td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium border ${
-                        item.status === 'COMPLIANT' 
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-100' 
-                        : 'bg-rose-50 text-rose-700 border-rose-100'
-                    }`}>
-                      {item.status === 'COMPLIANT' ? 'GEÇTİ' : 'KALDI'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-muted-foreground font-mono text-xs max-w-xs truncate" title={item.details}>
-                    {item.details}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                     {item.status === 'NON_COMPLIANT' && (
-                        <Button variant="ghost" size="sm" className="h-7 text-[10px] font-mono text-primary hover:text-primary hover:bg-primary/10">
-                            GÖREV OLUŞTUR
-                        </Button>
-                     )}
-                  </td>
-                </tr>
+                <ComplianceRow key={i} item={item} />
               ))}
             </tbody>
           </table>
         </div>
       </div>
     </div>
+  );
+}
+
+function ComplianceRow({ item }: { item: any }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const hasRemediation = item.status === 'NON_COMPLIANT' && item.remediation;
+
+  return (
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} asChild>
+      <>
+        <tr className={`hover:bg-muted/30 transition-colors group ${isOpen ? 'bg-muted/30' : ''}`}>
+          <td className="px-6 py-4 font-mono font-medium text-foreground">
+             <div className="flex items-center gap-2">
+                {hasRemediation && (
+                   <CollapsibleTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-muted">
+                        {isOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                      </Button>
+                   </CollapsibleTrigger>
+                )}
+                {item.ruleId}
+             </div>
+          </td>
+          <td className="px-6 py-4 font-mono text-muted-foreground">{item.resourceId}</td>
+          <td className="px-6 py-4">
+            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium border ${
+                item.status === 'COMPLIANT' 
+                ? 'bg-emerald-50 text-emerald-700 border-emerald-100' 
+                : 'bg-rose-50 text-rose-700 border-rose-100'
+            }`}>
+              {item.status === 'COMPLIANT' ? 'GEÇTİ' : 'KALDI'}
+            </span>
+          </td>
+          <td className="px-6 py-4 text-muted-foreground font-mono text-xs max-w-xs truncate" title={item.details}>
+            {item.details}
+          </td>
+          <td className="px-6 py-4 text-right">
+              {item.status === 'NON_COMPLIANT' && (
+                <Button variant="ghost" size="sm" className="h-7 text-[10px] font-mono text-primary hover:text-primary hover:bg-primary/10">
+                    GÖREV OLUŞTUR
+                </Button>
+              )}
+          </td>
+        </tr>
+        <CollapsibleContent asChild>
+           <tr>
+             <td colSpan={5} className="p-0 border-b border-border/40 bg-amber-50/30 dark:bg-amber-950/10">
+                 <div className="px-6 py-4 flex items-start gap-3">
+                    <div className="bg-amber-100 dark:bg-amber-900/40 p-1.5 rounded-full mt-0.5">
+                       <Lightbulb className="h-4 w-4 text-amber-600 dark:text-amber-500" />
+                    </div>
+                    <div className="space-y-1">
+                        <p className="text-xs font-bold font-mono text-amber-800 dark:text-amber-400">ÖNERİLEN ÇÖZÜM (REMEDIATION)</p>
+                        <p className="text-sm text-foreground/80 font-mono leading-relaxed max-w-4xl">
+                            {item.remediation}
+                        </p>
+                    </div>
+                 </div>
+             </td>
+           </tr>
+        </CollapsibleContent>
+      </>
+    </Collapsible>
   );
 }

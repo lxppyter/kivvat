@@ -29,32 +29,40 @@ export declare class AuthService {
     getProfile(userId: string): Promise<{
         subscription: {
             id: string;
+            plan: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
             userId: string;
-            plan: string;
+            status: string;
             startDate: Date;
             endDate: Date | null;
         } | null;
+        email: string;
+        role: import("@prisma/client").$Enums.Role;
         id: string;
+        licenseKey: string | null;
         name: string | null;
+        companyName: string | null;
+        plan: import("@prisma/client").$Enums.Plan;
+        licenseExpiresAt: Date | null;
+        subscriptionStatus: string | null;
         createdAt: Date;
         updatedAt: Date;
-        email: string;
-        companyName: string | null;
-        role: string;
     }>;
     updateProfile(userId: string, dto: {
         name?: string;
         password?: string;
     }): Promise<{
+        email: string;
+        role: import("@prisma/client").$Enums.Role;
         id: string;
+        licenseKey: string | null;
         name: string | null;
+        companyName: string | null;
+        plan: import("@prisma/client").$Enums.Plan;
+        licenseExpiresAt: Date | null;
+        subscriptionStatus: string | null;
         createdAt: Date;
         updatedAt: Date;
-        email: string;
-        companyName: string | null;
-        role: string;
     }>;
 }

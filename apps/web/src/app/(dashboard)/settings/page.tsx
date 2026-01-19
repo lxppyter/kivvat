@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Save, Loader2 } from "lucide-react";
+import { Save, Loader2, CreditCard, ChevronRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { auth } from "@/lib/api";
 import { toast } from "sonner";
 
@@ -14,6 +15,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({ name: "" });
   const [saving, setSaving] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -65,15 +67,15 @@ export default function SettingsPage() {
         </Button>
       </div>
 
-      <div className="grid gap-8">
-         {/* Profile Section */}
-         <div className="border border-border bg-card p-8 rounded-xl shadow-sm">
+      <div className="grid gap-6 lg:grid-cols-12 items-start">
+         {/* LEFT COLUMN: Profile Section */}
+         <div className="lg:col-span-7 border border-border bg-card p-6 rounded-xl shadow-sm h-full">
              <div className="mb-6">
                  <h2 className="text-lg font-bold text-foreground font-mono tracking-tight">Kullanıcı Profili</h2>
                  <p className="text-sm text-muted-foreground font-mono mt-1">Hesap bilgilerinizi yönetin.</p>
              </div>
              
-             <div className="grid gap-6 max-w-xl">
+             <div className="grid gap-5">
                  <div className="grid gap-2">
                      <Label className="text-xs font-semibold font-mono text-muted-foreground uppercase tracking-wide">Ad Soyad</Label>
                      <Input 
@@ -94,29 +96,50 @@ export default function SettingsPage() {
              </div>
          </div>
 
-         {/* Notifications Section */}
-         <div className="border border-border bg-card p-8 rounded-xl shadow-sm">
-             <div className="mb-6">
-                 <h2 className="text-lg font-bold text-foreground font-mono tracking-tight">Bildirimler</h2>
-                 <p className="text-sm text-muted-foreground font-mono mt-1">Uyarı tercihlerini yapılandırın.</p>
-             </div>
-             
-             <div className="space-y-6">
-                 <div className="flex items-center justify-between">
-                     <div className="space-y-0.5">
-                         <Label className="text-sm font-bold font-mono text-foreground">E-posta Bildirimleri</Label>
-                         <p className="text-xs text-muted-foreground font-mono">Günlük özetleri e-posta ile alın.</p>
-                     </div>
-                     <Switch />
-                 </div>
-                 <div className="flex items-center justify-between">
-                     <div className="space-y-0.5">
-                         <Label className="text-sm font-bold font-mono text-foreground">Kritik Zafiyet Uyarıları</Label>
-                         <p className="text-xs text-muted-foreground font-mono">Yüksek riskli bulgular için anlık bildirim.</p>
-                     </div>
-                     <Switch defaultChecked />
-                 </div>
-             </div>
+         {/* RIGHT COLUMN: Notifications & Billing */}
+         <div className="lg:col-span-5 space-y-6">
+            {/* Notifications Section */}
+            <div className="border border-border bg-card p-6 rounded-xl shadow-sm">
+                <div className="mb-6">
+                    <h2 className="text-lg font-bold text-foreground font-mono tracking-tight">Bildirimler</h2>
+                    <p className="text-sm text-muted-foreground font-mono mt-1">Uyarı tercihlerini yapılandırın.</p>
+                </div>
+                
+                <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                            <Label className="text-sm font-bold font-mono text-foreground">E-posta Bildirimleri</Label>
+                            <p className="text-[10px] text-muted-foreground font-mono">Günlük özetleri e-posta ile alın.</p>
+                        </div>
+                        <Switch />
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                            <Label className="text-sm font-bold font-mono text-foreground">Kritik Uyarılar</Label>
+                            <p className="text-[10px] text-muted-foreground font-mono">Yüksek riskli bulgular için anlık bildirim.</p>
+                        </div>
+                        <Switch defaultChecked />
+                    </div>
+                </div>
+            </div>
+            
+            {/* Billing Section Link */}
+            <div className="border border-border bg-card p-6 rounded-xl shadow-sm">
+                <div className="flex items-center justify-between gap-4">
+                    <div className="flex gap-4 items-center overflow-hidden">
+                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                            <CreditCard className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0">
+                           <h2 className="text-base font-bold text-foreground font-mono tracking-tight truncate">Faturalandırma</h2>
+                           <p className="text-[10px] text-muted-foreground font-mono mt-0.5 truncate">Abonelik durumunuzu yönetin.</p>
+                        </div>
+                    </div>
+                    <Button variant="outline" size="sm" className="font-mono shrink-0" onClick={() => router.push('/settings/billing')}>
+                        Yönet
+                    </Button>
+                </div>
+            </div>
          </div>
       </div>
     </div>

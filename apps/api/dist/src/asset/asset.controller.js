@@ -16,6 +16,7 @@ exports.AssetController = void 0;
 const common_1 = require("@nestjs/common");
 const asset_service_1 = require("./asset.service");
 const passport_1 = require("@nestjs/passport");
+const subscription_guard_1 = require("../common/guards/subscription.guard");
 let AssetController = class AssetController {
     assetService;
     constructor(assetService) {
@@ -79,7 +80,7 @@ __decorate([
 ], AssetController.prototype, "createBulk", null);
 exports.AssetController = AssetController = __decorate([
     (0, common_1.Controller)('assets'),
-    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), subscription_guard_1.SubscriptionGuard),
     __metadata("design:paramtypes", [asset_service_1.AssetService])
 ], AssetController);
 //# sourceMappingURL=asset.controller.js.map

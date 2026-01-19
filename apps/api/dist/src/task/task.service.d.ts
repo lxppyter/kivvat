@@ -78,10 +78,14 @@ export declare class TaskService {
             createdAt: Date;
             updatedAt: Date;
             email: string;
+            licenseKey: string | null;
             password: string;
             hashedRefreshToken: string | null;
             companyName: string | null;
-            role: string;
+            role: import("@prisma/client").$Enums.Role;
+            plan: import("@prisma/client").$Enums.Plan;
+            licenseExpiresAt: Date | null;
+            subscriptionStatus: string | null;
         } | null;
     } & {
         id: string;

@@ -13,6 +13,7 @@ export declare class AssetService {
         provider: string;
         userId: string;
     }[]>;
+    countByType(userId: string, type: string): Promise<number>;
     create(userId: string, data: any): Promise<{
         id: string;
         name: string;

@@ -1,9 +1,10 @@
 import { Controller, Get, Post, Body, Patch, Delete, Param, UseGuards, Request } from '@nestjs/common';
 import { AssetService } from './asset.service';
 import { AuthGuard } from '@nestjs/passport';
+import { SubscriptionGuard } from '../common/guards/subscription.guard';
 
 @Controller('assets')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'), SubscriptionGuard)
 export class AssetController {
   constructor(private readonly assetService: AssetService) {}
 

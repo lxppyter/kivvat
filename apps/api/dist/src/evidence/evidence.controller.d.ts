@@ -5,16 +5,16 @@ export declare class EvidenceController {
     getHistory(controlId: string): Promise<({
         gaps: {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            status: import("@prisma/client").$Enums.ComplianceStatus;
-            details: string | null;
             controlId: string;
             evidenceId: string;
+            status: import("@prisma/client").$Enums.ComplianceStatus;
+            details: string | null;
+            createdAt: Date;
+            updatedAt: Date;
         }[];
     } & {
-        id: string;
         result: import("@prisma/client/runtime/client").JsonValue;
+        id: string;
         source: string;
         resourceId: string | null;
         checkName: string;
@@ -27,31 +27,31 @@ export declare class EvidenceController {
                 standard: {
                     id: string;
                     name: string;
-                    description: string | null;
                     createdAt: Date;
                     updatedAt: Date;
+                    description: string | null;
                 };
             } & {
                 id: string;
                 name: string;
-                description: string | null;
                 createdAt: Date;
                 updatedAt: Date;
                 standardId: string;
                 code: string;
+                description: string | null;
             };
         } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            status: import("@prisma/client").$Enums.ComplianceStatus;
-            details: string | null;
             controlId: string;
             evidenceId: string;
+            status: import("@prisma/client").$Enums.ComplianceStatus;
+            details: string | null;
+            createdAt: Date;
+            updatedAt: Date;
         })[];
     } & {
-        id: string;
         result: import("@prisma/client/runtime/client").JsonValue;
+        id: string;
         source: string;
         resourceId: string | null;
         checkName: string;

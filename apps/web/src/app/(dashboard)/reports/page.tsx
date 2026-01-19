@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Download, Filter, Search, Loader2, Package, Calendar, ShieldCheck } from "lucide-react";
+import { FileText, Download, Filter, Search, Loader2, Package, Calendar, ShieldCheck, Share2, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { scanner, reports } from "@/lib/api";
+import api, { scanner, reports } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { ComplianceChart } from "@/components/dashboard/ComplianceChart";
 import { RULE_TO_CONTROLS_MAP, getStandardName } from "@/lib/compliance-map";
@@ -14,16 +14,24 @@ export default function ReportsPage() {
     const [downloadingId, setDownloadingId] = useState<string | null>(null);
     const [stats, setStats] = useState<any[]>([]);
 
+    const [userPlan, setUserPlan] = useState<string | null>(null);
+
     useEffect(() => {
-        fetchReports();
+        fetchData();
     }, []);
 
-    const fetchReports = async () => {
+    const fetchData = async () => {
         try {
-            const res = await scanner.getReports();
-            setItems(res.data);
-            if (res.data.length > 0) {
-                calculateStats(res.data[0]); // Use latest report for chart
+            const [reportRes, profileRes] = await Promise.all([
+                scanner.getReports(),
+                api.get("/auth/me")
+            ]);
+            
+            setItems(reportRes.data);
+            setUserPlan(profileRes.data.plan);
+
+            if (reportRes.data.length > 0) {
+                calculateStats(reportRes.data[0]); // Use latest report for chart
             }
         } catch (e) {
             console.error(e);
@@ -109,6 +117,21 @@ export default function ReportsPage() {
            </p>
         </div>
         <div className="flex items-center gap-2">
+            <Button 
+                variant={userPlan === 'ENTERPRISE' ? "default" : "outline"} 
+                className="gap-2 font-mono text-xs"
+                onClick={() => {
+                    if (userPlan !== 'ENTERPRISE') {
+                        alert("Denetçi Paylaşımı (Audit Share) sadece TOTAL AUTHORITY (Enterprise) pakette mevcuttur.");
+                        return;
+                    }
+                    // Handle share action (mock for now or dialog)
+                    alert("Paylaşım özelliği yakında aktif."); // Or implement dialog later if requested
+                }}
+            >
+                {userPlan === 'ENTERPRISE' ? <Share2 className="h-4 w-4" /> : <Lock className="h-4 w-4 text-muted-foreground" />}
+                {userPlan === 'ENTERPRISE' ? "PAYLAŞ" : "PAYLAŞ (ENT)"}
+            </Button>
             <Button variant="outline"><Filter className="mr-2 h-4 w-4"/> Filtrele</Button>
         </div>
       </div>

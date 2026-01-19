@@ -7,10 +7,10 @@ export declare class PolicyController {
     getTemplates(): Promise<{
         id: string;
         name: string;
-        createdAt: Date;
-        updatedAt: Date;
         content: string;
         category: string;
+        createdAt: Date;
+        updatedAt: Date;
         version: string;
     }[]>;
     getAssignments(userId?: string): Promise<{
@@ -27,9 +27,9 @@ export declare class PolicyController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            userId: string | null;
             policyId: string;
+            userId: string | null;
+            status: string;
             signedAt: Date | null;
             signerName: string | null;
             signerEmail: string | null;
@@ -50,9 +50,9 @@ export declare class PolicyController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
-        userId: string | null;
         policyId: string;
+        userId: string | null;
+        status: string;
         signedAt: Date | null;
         signerName: string | null;
         signerEmail: string | null;
@@ -70,16 +70,16 @@ export declare class PolicyController {
     updatePolicy(id: string, content: string): Promise<{
         id: string;
         name: string;
-        createdAt: Date;
-        updatedAt: Date;
         content: string;
         category: string;
+        createdAt: Date;
+        updatedAt: Date;
         version: string;
     }>;
     getHistory(id: string): Promise<{
         id: string;
-        createdAt: Date;
         content: string;
+        createdAt: Date;
         version: string;
         policyId: string;
     }[]>;
@@ -90,17 +90,17 @@ export declare class PolicyController {
     } & {
         id: string;
         createdAt: Date;
+        policyId: string | null;
         token: string;
         expiresAt: Date | null;
-        policyId: string | null;
         active: boolean;
     })[]>;
     revokeShare(id: string): Promise<{
         id: string;
         createdAt: Date;
+        policyId: string | null;
         token: string;
         expiresAt: Date | null;
-        policyId: string | null;
         active: boolean;
     }>;
     createShareAllLink(body: {
@@ -130,10 +130,10 @@ export declare class PolicyController {
         policy: {
             id: string;
             name: string;
-            createdAt: Date;
-            updatedAt: Date;
             content: string;
             category: string;
+            createdAt: Date;
+            updatedAt: Date;
             version: string;
         } | null;
         policies?: undefined;
@@ -146,9 +146,9 @@ export declare class PolicyController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
-        userId: string | null;
         policyId: string;
+        userId: string | null;
+        status: string;
         signedAt: Date | null;
         signerName: string | null;
         signerEmail: string | null;

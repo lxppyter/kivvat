@@ -4,12 +4,12 @@ export declare class ScannerController {
     constructor(scannerService: ScannerService);
     getReports(req: any): Promise<{
         id: string;
-        createdAt: Date;
-        status: string;
         provider: string;
         score: number;
+        status: string;
         results: import("@prisma/client/runtime/client").JsonValue;
         userId: string;
+        createdAt: Date;
     }[]>;
     syncAssets(req: any, body: {
         credentials: any;
@@ -18,14 +18,14 @@ export declare class ScannerController {
     }>;
     getAssets(req: any): Promise<{
         id: string;
-        name: string;
-        updatedAt: Date;
-        status: string | null;
-        details: import("@prisma/client/runtime/client").JsonValue | null;
-        region: string | null;
-        type: string;
         provider: string;
+        status: string | null;
         userId: string;
+        name: string;
+        type: string;
+        region: string | null;
+        details: import("@prisma/client/runtime/client").JsonValue | null;
+        updatedAt: Date;
     }[]>;
     runScan(body: {
         provider: string;

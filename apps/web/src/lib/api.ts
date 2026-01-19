@@ -155,4 +155,14 @@ export const tasks = {
   update: (id: string, data: any) => api.patch(`/tasks/${id}`, data),
 };
 
+export const vendors = {
+  getAll: (userId?: string) => api.get('/vendors', { params: { userId } }),
+  create: (data: any) => api.post('/vendors', data),
+  remove: (id: string) => api.delete(`/vendors/${id}`),
+};
+
+export const payment = {
+  activate: (licenseKey: string) => api.post('/payment/activate', { licenseKey }),
+};
+
 export default api;

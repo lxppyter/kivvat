@@ -26,6 +26,11 @@ let AssetService = class AssetService {
             ]
         });
     }
+    async countByType(userId, type) {
+        return this.prisma.asset.count({
+            where: { userId, type }
+        });
+    }
     async create(userId, data) {
         return this.prisma.asset.create({
             data: {

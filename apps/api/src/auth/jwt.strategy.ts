@@ -29,6 +29,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     // Normal behavior (including successful auditor check)
     return {
       userId: payload.sub,
+      id: payload.sub,
       email: payload.email,
       role: payload.role || 'STAFF', // Default to STAFF if undefined (legacy tokens)
     };

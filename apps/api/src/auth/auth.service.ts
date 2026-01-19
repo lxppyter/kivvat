@@ -24,7 +24,7 @@ export class AuthService {
         companyName: dto.company_name,
         subscription: {
             create: {
-                plan: 'COMPLIANCE CORE',
+                plan: 'FREE',
                 status: 'ACTIVE'
             }
         }

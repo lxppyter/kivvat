@@ -1,4 +1,5 @@
 import { Shell } from "@/components/layout/shell";
+import RequireSubscription from "@/components/auth/require-subscription";
 
 export default function DashboardLayout({
   children,
@@ -7,7 +8,9 @@ export default function DashboardLayout({
 }) {
   return (
     <div className="bg-white min-h-screen text-slate-900">
-      <Shell>{children}</Shell>
+      <Shell>
+        <RequireSubscription>{children}</RequireSubscription>
+      </Shell>
     </div>
   );
 }

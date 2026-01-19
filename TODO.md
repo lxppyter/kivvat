@@ -65,13 +65,19 @@ Bu dosya Kivvat projesinin anlık durumunu, tamamlanan özellikleri ve yapılmas
 - [x] **One-Click Export:**
     - [x] Tüm uyumluluk durumunun tek PDF/Excel paketi olarak ihracı.
     - [x] Denetçi dostu klasör yapısında çıktı (Zip).
-    - [ ] **Incident Response Log:** Güvenlik ihlallerinin tespit, müdahale ve kapanış kayıtları.
+    - [x] **Incident Response Log:** Güvenlik ihlallerinin tespit, müdahale ve kapanış kayıtları.
 
 ## 🚀 Gelecek Planları (Upcoming)
-- [ ] **SSL/TLS Certificate Monitor:** Load Balancer ve Endpoint sertifikalarının süre kontrolü.
-- [ ] **Remediation Guidance:** Zafiyetler için adım adım iyileştirme rehberleri.
+- [x] **SSL/TLS Certificate Monitor:** Load Balancer ve Endpoint sertifikalarının süre kontrolü.
+- [x] **Remediation Guidance:** Zafiyetler için adım adım iyileştirme rehberleri.
 - [ ] **Configuration Drift:** Yapılandırma değişikliklerinin (Diff) analizi.
-- [ ] **Tedarikçi (Vendor) Risk Yönetimi:** 3. taraf yazılımların sertifika/güvenlik takibi.
-- [ ] **Ödeme Altyapısı (Payment Infrastructure):** Stripe/Iyzico entegrasyonu ve abonelik yönetimi.
+- [x] **Tedarikçi (Vendor) Risk Yönetimi:** 3. taraf yazılımların sertifika/güvenlik takibi.
+- [x] **Ödeme Altyapısı (Gumroad):** Lisans anahtarı doğrulama (License Key Verification) sistemi.
 - [ ] **Landing Page UI & İçerik İyileştirmeleri:** Tasarımın cilalanması ve pazarlama metinlerinin güçlendirilmesi.
-- [ ] **Sistem Güvenlik İyileştirmeleri:** OWASP Top 10 zafiyetlerine (Injection, Broken Auth vb.) göre sistemin güçlendirilmesi.
+- [x] **Sistem Güvenlik İyileştirmeleri:** OWASP Top 10 zafiyetlerine (Injection, Broken Auth vb.) göre sistemin güçlendirilmesi.
+
+## 💰 Abonelik ve Paketleme (SaaS Model)
+- [x] **Feature Gating:** Frontend (RequirePro) ve Backend (SubscriptionGuard) korumaları.
+- [x] **Limit Enforcement:** Paket tabanlı kaynak (1/3/Sınırsız) ve standart (KVKK/ISO/SOC2) limitleri.
+- [x] **Prepaid License Model:** Ön ödemeli lisans anahtarı ile "Free -> Pro" yükseltme akışı.
+- [x] **Total Lockdown:** Free kullanıcılar için tam erişim kısıtlaması (Billing hariç).

@@ -116,17 +116,17 @@ export declare class PolicyService {
     } & {
         id: string;
         createdAt: Date;
+        active: boolean;
         token: string;
         expiresAt: Date | null;
         policyId: string | null;
-        active: boolean;
     })[]>;
     revokeShare(id: string): Promise<{
         id: string;
         createdAt: Date;
+        active: boolean;
         token: string;
         expiresAt: Date | null;
         policyId: string | null;
-        active: boolean;
     }>;
 }

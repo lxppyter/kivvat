@@ -8,6 +8,7 @@ export declare class JwtStrategy extends JwtStrategy_base {
     constructor(prisma: PrismaService);
     validate(payload: any): Promise<{
         userId: any;
+        id: any;
         email: any;
         role: any;
     }>;

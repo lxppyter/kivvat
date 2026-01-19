@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -30,7 +30,47 @@ export default function ConnectionPage() {
     serviceAccountJson: ""
   });
 
+  // ... inside ConnectionPage
+  const [userPlan, setUserPlan] = useState<string | null>(null);
+  const [connectedCount, setConnectedCount] = useState(0);
+  const [checkingLimits, setCheckingLimits] = useState(true);
+
+  useEffect(() => {
+    checkLimits();
+  }, []);
+
+  const checkLimits = async () => {
+    try {
+        const [profileRes, assetsRes] = await Promise.all([
+            api.get("/auth/me"),
+            api.get("/assets?type=ACCOUNT") 
+        ]);
+        
+        setUserPlan(profileRes.data.plan);
+        // assets endpoint returns all assets, filter by ACCOUNT type if backend doesn't support query param perfectly yet
+        // Assuming backend supports it or we filter client side.
+        // Based on previous work, AssetService has countByType but controller might need update.
+        // Let's assume we get all assets and filter client side to be safe.
+        const accounts = assetsRes.data.filter((a: any) => a.type === 'ACCOUNT');
+        setConnectedCount(accounts.length);
+    } catch (e) {
+        console.error("Limit check failed", e);
+    } finally {
+        setCheckingLimits(false);
+    }
+  };
+
+  const getLimit = () => {
+      if (userPlan === 'ENTERPRISE') return 999;
+      if (userPlan === 'PRO') return 3;
+      return 1; // CORE and FREE
+  };
+
+  const limit = getLimit();
+  const isLimitReached = connectedCount >= limit;
+
   const handleConnect = async (provider: string, data: any) => {
+    if (isLimitReached) return;
     setLoading(true);
     setStatus(null);
     try {
@@ -41,6 +81,7 @@ export default function ConnectionPage() {
         localStorage.setItem(`${provider}_credentials`, JSON.stringify(data));
         
         setStatus({ type: 'success', message: 'Bağlantı başarıyla sağlandı. Tarama için hazır.' });
+        checkLimits(); // Refresh limits
     } catch (error) {
         setStatus({ type: 'error', message: 'Bağlantı hatası. Bilgilerinizi kontrol edin.' });
     } finally {
@@ -58,6 +99,22 @@ export default function ConnectionPage() {
       </div>
 
       <div className="border border-border bg-card p-8 rounded-xl shadow-sm">
+          {isLimitReached && !checkingLimits && (
+              <div className="mb-6 bg-amber-500/10 border border-amber-500/20 p-4 rounded-lg flex items-center gap-3">
+                  <div className="bg-amber-500/20 p-2 rounded-full">
+                      <Shield className="h-5 w-5 text-amber-600" />
+                  </div>
+                  <div>
+                      <h4 className="font-bold text-amber-700 text-sm font-mono">PAKET LİMİTİNE ULAŞILDI ({connectedCount}/{limit})</h4>
+                      <p className="text-xs text-amber-800/80 font-mono mt-1">
+                          Yeni bir bulut hesabı bağlamak için mevcut bağlantıyı silin veya paketinizi yükseltin.
+                      </p>
+                  </div>
+                  <Button variant="outline" size="sm" className="ml-auto border-amber-200 text-amber-800 hover:bg-amber-100 font-mono text-xs" onClick={() => window.location.href='/settings/billing'}>
+                      YÜKSELT
+                  </Button>
+              </div>
+          )}
           <div className="mb-8">
             <h2 className="text-lg font-bold text-foreground mb-1">Sağlayıcı Seçimi</h2>
             <p className="text-sm text-muted-foreground">Otomatik denetim için hedef altyapıyı seçin.</p>
@@ -114,8 +171,8 @@ export default function ConnectionPage() {
                 </div>
               </div>
               <Button 
-                className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 font-mono rounded-lg tracking-wide text-xs shadow-sm mt-2" 
-                disabled={loading} 
+                className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 font-mono rounded-lg tracking-wide text-xs shadow-sm mt-2 disabled:opacity-50 disabled:cursor-not-allowed" 
+                disabled={loading || (isLimitReached && !checkingLimits)} 
                 onClick={() => handleConnect('aws', awsForm)}
               >
                 {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Cloud className="mr-2 h-4 w-4" />}
@@ -167,8 +224,8 @@ export default function ConnectionPage() {
                     </div>
                </div>
                <Button 
-                className="w-full h-12 bg-blue-600 text-white hover:bg-blue-700 font-mono rounded-lg tracking-wide text-xs shadow-sm mt-2" 
-                disabled={loading}
+                className="w-full h-12 bg-blue-600 text-white hover:bg-blue-700 font-mono rounded-lg tracking-wide text-xs shadow-sm mt-2 disabled:opacity-50 disabled:cursor-not-allowed" 
+                disabled={loading || (isLimitReached && !checkingLimits)}
                 onClick={() => handleConnect('azure', azureForm)}
                >
                  {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Cloud className="mr-2 h-4 w-4" />}
@@ -202,8 +259,8 @@ export default function ConnectionPage() {
                     </div>
                </div>
                 <Button 
-                className="w-full h-12 bg-yellow-600 text-white hover:bg-yellow-700 font-mono rounded-lg tracking-wide text-xs shadow-sm mt-2" 
-                disabled={loading}
+                className="w-full h-12 bg-yellow-600 text-white hover:bg-yellow-700 font-mono rounded-lg tracking-wide text-xs shadow-sm mt-2 disabled:opacity-50 disabled:cursor-not-allowed" 
+                disabled={loading || (isLimitReached && !checkingLimits)}
                 onClick={() => handleConnect('gcp', gcpForm)}
                >
                  {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Cloud className="mr-2 h-4 w-4" />}

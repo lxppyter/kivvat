@@ -4,6 +4,7 @@ export interface ScanResult {
   resourceId?: string;
   details: string;
   severity?: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  remediation?: string;
   metadata?: any;
 }
 

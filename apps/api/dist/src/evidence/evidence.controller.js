@@ -15,6 +15,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.EvidenceController = void 0;
 const common_1 = require("@nestjs/common");
 const evidence_service_1 = require("./evidence.service");
+const passport_1 = require("@nestjs/passport");
+const subscription_guard_1 = require("../common/guards/subscription.guard");
 let EvidenceController = class EvidenceController {
     evidenceService;
     constructor(evidenceService) {
@@ -43,6 +45,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], EvidenceController.prototype, "getEvidence", null);
 exports.EvidenceController = EvidenceController = __decorate([
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), subscription_guard_1.SubscriptionGuard),
     (0, common_1.Controller)('evidence'),
     __metadata("design:paramtypes", [evidence_service_1.EvidenceService])
 ], EvidenceController);

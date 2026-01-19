@@ -17,7 +17,19 @@ async function bootstrap() {
   }));
   
   // Security Headers
-  app.use(helmet());
+  app.use(helmet({
+    contentSecurityPolicy: false, // Disabled for dev (avoid blocking inline scripts/styles if needed)
+    crossOriginEmbedderPolicy: false,
+    hsts: {
+      maxAge: 31536000, // 1 year
+      includeSubDomains: true,
+      preload: true,
+    },
+    xssFilter: true, // Protection against Cross-site scripting (XSS) attacks
+    noSniff: true, // Protection against MIME type sniffing
+    hidePoweredBy: true, // Hide X-Powered-By header
+    frameguard: { action: 'deny' }, // Protection against Clickjacking
+  }));
 
   // CORS Configuration
   app.enableCors({

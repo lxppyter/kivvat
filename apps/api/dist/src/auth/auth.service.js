@@ -67,7 +67,7 @@ let AuthService = class AuthService {
                 companyName: dto.company_name,
                 subscription: {
                     create: {
-                        plan: 'COMPLIANCE CORE',
+                        plan: 'FREE',
                         status: 'ACTIVE'
                     }
                 }

@@ -1,8 +1,9 @@
 import { Controller, Post, Get, Body, UseGuards, Req } from '@nestjs/common';
 import { ScannerService } from './scanner.service';
 import { AuthGuard } from '@nestjs/passport';
+import { SubscriptionGuard } from '../common/guards/subscription.guard';
 
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'), SubscriptionGuard)
 @Controller('scanner')
 export class ScannerController {
   constructor(private readonly scannerService: ScannerService) {}
@@ -26,9 +27,10 @@ export class ScannerController {
   async runScan(@Body() body: { provider: string; credentials: any }, @Req() req: any) {
     console.log('User in Controller:', req.user);
     const userId = req.user?.userId;
+    const plan = req.user?.plan || 'FREE';
     if (!userId) throw new Error('User ID missing from request');
     const creds = body.credentials || {}; 
     // If provider is DEMO, we just run the manual scan part of runScan
-    return this.scannerService.runScan(body.provider, creds, userId);
+    return this.scannerService.runScan(body.provider, creds, userId, plan);
   }
 }

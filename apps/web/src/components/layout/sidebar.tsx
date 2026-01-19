@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, ShieldCheck, ListCheck, FileText, Settings, Shield, Link as LinkIcon, LogOut, Database, ScrollText } from "lucide-react";
+import { LayoutDashboard, ShieldCheck, ListCheck, FileText, Settings, Shield, Link as LinkIcon, LogOut, Database, ScrollText, AlertTriangle, Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { auth } from "@/lib/api";
 import Cookies from "js-cookie";
@@ -49,12 +49,14 @@ export function Sidebar() {
           { icon: Database, label: "Varlıklar", href: "/assets" },
           { icon: ScrollText, label: "Politikalar", href: "/policies" },
           { icon: FileText, label: "Raporlar", href: "/reports" },
+          { icon: AlertTriangle, label: "Olaylar", href: "/incidents", proOnly: true },
           { icon: LinkIcon, label: "Bağlantı", href: "/connection", adminOnly: true },
           { icon: ListCheck, label: "Görevler", href: "/tasks" },
+          { icon: Briefcase, label: "Tedarikçiler", href: "/vendors", proOnly: true },
           { icon: ShieldCheck, label: "Uyumluluk", href: "/compliance" },
           { icon: Settings, label: "Ayarlar", href: "/settings", adminOnly: true },
         ]
-        .filter(item => !isAuditor || !item.adminOnly)
+        .filter(item => (!isAuditor || !item.adminOnly) && (!item.proOnly || (user?.plan === 'PRO' || user?.plan === 'ENTERPRISE')))
         .map((item) => (
           <Link
             key={item.href}
