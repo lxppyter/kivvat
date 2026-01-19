@@ -104,8 +104,8 @@ Built with a high-performance, type-safe monorepo architecture:
    ```bash
    npm run dev
    ```
-   - Frontend: `http://localhost:3000`
-   - Backend: `http://localhost:3001`
+   - Frontend: `http://localhost:3001`
+   - Backend: `http://localhost:3000`
 
 ---
 
