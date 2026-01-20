@@ -1,25 +1,31 @@
 # Kivvat (Regu-Track) 🛡️
 
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
-![Tech Stack](https://img.shields.io/badge/stack-NestJS%20%7C%20Next.js%20%7C%20Prisma-blue)
+![Tech Stack](https://img.shields.io/badge/stack-NestJS%20%7C%20Next.js%2016%20%7C%20Prisma-blue)
 ![License](https://img.shields.io/badge/license-Private-red)
 ![Compliance](https://img.shields.io/badge/compliance-ISO27001%20%7C%20SOC2-orange)
 
-> **Enterprise Compliance Automation & Security Observation Platform**
+> **Kivvat OS: The Autonomous Digital Security Engineer**
 
-Kivvat is a next-generation security and compliance platform designed to automate the painful process of audit readiness (SOC2, ISO 27001, KVKK) and infrastructure security monitoring.
+Kivvat is an AI-powered autonomous security engineer designed to handle audit readiness (SOC2, ISO 27001, KVKK) and specialized security operations without human intervention.
 
-Unlike traditional tools that require heavy agent installation, Kivvat uses an **Agentless** architecture to scan your cloud infrastructure (AWS, Azure, GCP) in real-time, providing an instant visual map of your security posture.
+Unlike traditional tools, Kivvat uses a **Zero-Data Access** and **Agentless** architecture to scan your cloud infrastructure (AWS, Azure, GCP), guaranteeing privacy while providing deep security insights.
 
 ---
 
 ## 🚀 Key Features
 
 ### 🔌 Agentless Multi-Cloud Scanning
-Connect your cloud accounts via API and start scanning in minutes without installing agents on your servers.
+Connect your cloud accounts via API and start scanning in minutes.
 - **AWS**: IAM, S3, EC2, CloudTrail
 - **Azure**: Storage, SQL, VM Security
 - **GCP**: IAM, Cloud SQL, Compute Engine
+
+### ⚡ Certification Fast-Track
+Accelerate your audit process with our project-based solution.
+- **90-Day Guarantee**: Get audit-ready for SOC2/ISO27001 in 3 months.
+- **One-Time Payment**: No long-term subscriptions for urgent needs.
+- **Auto-Evidence**: Automated evidence collection and packaging.
 
 ### 📊 Unified Compliance Dashboard
 Automatically map technical findings to compliance Frameworks.
@@ -29,7 +35,7 @@ Automatically map technical findings to compliance Frameworks.
 
 ### 📜 Policy Management & Digital Signatures
 Manage the human side of compliance.
-- **Policy Hub**: Distribute and track employee acceptance of security policies.
+- **Policy Hub**: Distribute and track employee acceptance.
 - **Templates**: Built-in library of ISO-compliant policy templates.
 - **Digital Signatures**: Time-stamped approval tracking.
 
@@ -58,6 +64,7 @@ Built with a high-performance, type-safe monorepo architecture:
 | :--- | :--- | :--- |
 | **Backend** | [NestJS](https://nestjs.com/) | Scaleable Node.js framework with modular architecture. |
 | **Frontend** | [Next.js 16](https://nextjs.org/) | React Server Components, App Router. |
+| **Styling** | [TailwindCSS v4](https://tailwindcss.com/) | High-performance utility-first CSS engine. |
 | **Database** | PostgreSQL & [Prisma](https://www.prisma.io/) | Type-safe database access and schema management. |
 | **UI System** | [Shadcn/UI](https://ui.shadcn.com/) | Accessible, customizable component primitives. |
 | **Scanning** | AWS/Azure/GCP SDKs | Native cloud integrations. |
@@ -124,8 +131,8 @@ kivvat/
 - [x] Multi-Cloud Support (AWS, Azure, GCP)
 - [x] Compliance Reporting Engine
 - [x] Policy Management
-- [ ] **Incident Response Log** (Upcoming)
-- [ ] **SSL/TLS Certificate Monitor** (Upcoming)
+- [x] **Incident Response Log**
+- [x] **SSL/TLS Certificate Monitor**
 - [ ] **Remediation Guidance** (Upcoming)
 
 ---

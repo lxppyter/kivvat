@@ -48,9 +48,9 @@ export function LandingFooter() {
         <div className="border-t border-neutral-800 pt-8 flex flex-col md:flex-row justify-between items-center text-sm gap-4">
           <p>&copy; 2026 Kivvat Inc. Tüm hakları saklıdır.</p>
           <div className="flex gap-6">
-            <a href="#" className="hover:text-white transition-colors">Twitter</a>
-            <a href="#" className="hover:text-white transition-colors">LinkedIn</a>
-            <a href="#" className="hover:text-white transition-colors">GitHub</a>
+            <a href="https://x.com/lxppyter" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">X</a>
+            <a href="https://www.linkedin.com/in/lxppyter/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">LinkedIn</a>
+            <a href="https://github.com/lxppyter" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub</a>
           </div>
         </div>
       </div>

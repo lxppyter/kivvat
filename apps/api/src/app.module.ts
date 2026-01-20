@@ -24,7 +24,10 @@ import { AuditModule } from './audit/audit.module';
 import { AuditorReadOnlyGuard } from './common/guards/auditor-readonly.guard';
 import { WatermarkMiddleware } from './common/middleware/watermark.middleware';
 
+import { OriginGuardMiddleware } from './common/middleware/origin.middleware';
+
 @Module({
+  // ... (imports remain same, hidden for brevity)
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
@@ -37,8 +40,6 @@ import { WatermarkMiddleware } from './common/middleware/watermark.middleware';
     ]),
     EvidenceModule,
     AnalysisModule,
-    TaskModule,
-    ReportModule,
     TaskModule,
     ReportModule,
     PrismaModule,
@@ -70,7 +71,7 @@ import { WatermarkMiddleware } from './common/middleware/watermark.middleware';
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
-      .apply(WatermarkMiddleware)
+      .apply(WatermarkMiddleware, OriginGuardMiddleware)
       .forRoutes('*');
   }
 }

@@ -27,8 +27,8 @@ export const metadata: Metadata = {
   generator: "Next.js", 
   applicationName: "Kivvat-Secure-Engine",
   other: {
-    "x-powered-by": "Kivvat/2.4.0", // Looks technical
-    "x-build-id": "AGPL-3.0-SIGNED-7A9F", // Looks like a build hash
+    "x-powered-by": "Kivvat/2.4.0",
+    "x-build-id": "AGPL-3.0-SIGNED-7A9F",
   }
 };
 

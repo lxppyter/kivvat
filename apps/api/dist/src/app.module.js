@@ -31,10 +31,11 @@ const asset_module_1 = require("./asset/asset.module");
 const audit_module_1 = require("./audit/audit.module");
 const auditor_readonly_guard_1 = require("./common/guards/auditor-readonly.guard");
 const watermark_middleware_1 = require("./common/middleware/watermark.middleware");
+const origin_middleware_1 = require("./common/middleware/origin.middleware");
 let AppModule = class AppModule {
     configure(consumer) {
         consumer
-            .apply(watermark_middleware_1.WatermarkMiddleware)
+            .apply(watermark_middleware_1.WatermarkMiddleware, origin_middleware_1.OriginGuardMiddleware)
             .forRoutes('*');
     }
 };
@@ -53,8 +54,6 @@ exports.AppModule = AppModule = __decorate([
             ]),
             evidence_module_1.EvidenceModule,
             analysis_module_1.AnalysisModule,
-            task_module_1.TaskModule,
-            report_module_1.ReportModule,
             task_module_1.TaskModule,
             report_module_1.ReportModule,
             prisma_module_1.PrismaModule,

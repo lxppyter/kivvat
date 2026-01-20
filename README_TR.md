@@ -1,15 +1,15 @@
 # Kivvat (Regu-Track) 🛡️
 
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
-![Tech Stack](https://img.shields.io/badge/stack-NestJS%20%7C%20Next.js%20%7C%20Prisma-blue)
+![Tech Stack](https://img.shields.io/badge/stack-NestJS%20%7C%20Next.js%2016%20%7C%20Prisma-blue)
 ![License](https://img.shields.io/badge/license-Private-red)
 ![Compliance](https://img.shields.io/badge/compliance-ISO27001%20%7C%20SOC2-orange)
 
-> **Kurumsal Uyumluluk Otomasyonu & Güvenlik Gözlem Platformu**
+> **Kivvat OS: Otonom Dijital Güvenlik Mühendisi**
 
-Kivvat, denetim hazırlık süreçlerini (SOC2, ISO 27001, KVKK) ve altyapı güvenliği takibini otomatize eden, yeni nesil bir güvenlik platformudur.
+Kivvat, denetim hazırlık süreçlerini (SOC2, ISO 27001, KVKK) ve altyapı güvenliği takibini insan müdahalesi olmadan yöneten, yapay zeka destekli otonom bir güvenlik mühendisidir.
 
-Geleneksel araçların aksine ağır ajan (agent) kurulumu gerektirmez. **Agentless (Ajansız)** mimarisi sayesinde bulut altyapınızı (AWS, Azure, GCP) anlık olarak tarar ve güvenlik duruşunuzun görsel haritasını çıkarır.
+Geleneksel araçların aksine ağır ajan (agent) kurulumu gerektirmez. **Zero-Data Access (Sıfır Veri Erişimi)** ve **Agentless (Ajansız)** mimarisi sayesinde bulut altyapınızı (AWS, Azure, GCP) anlık olarak tarar ve güvenlik duruşunuzun görsel haritasını çıkarır.
 
 ---
 
@@ -20,6 +20,12 @@ Sunucularınıza hiçbir yazılım yüklemeden, sadece API bağlantısı ile dak
 - **AWS**: IAM, S3, EC2, CloudTrail denetimleri.
 - **Azure**: Storage, SQL, VM Güvenliği.
 - **GCP**: IAM, Cloud SQL, Compute Engine.
+
+### ⚡ Certification Fast-Track (Hızlı Başvuru)
+Denetim sürecinizi proje bazlı özel çözümümüzle hızlandırın.
+- **90 Gün Garanti**: 3 ay içinde SOC2/ISO27001 denetimine hazır olma garantisi.
+- **Tek Seferlik Ödeme**: Uzun vadeli abonelikler yerine proje bazlı ödeme.
+- **Otomatik Kanıt**: Kanıtların (Evidence) otomatik toplanması ve paketlenmesi.
 
 ### 📊 Birleşik Uyumluluk Paneli
 Teknik bulguları otomatik olarak uyumluluk maddeleriyle eşleştirin.
@@ -58,6 +64,7 @@ Yüksek performanslı, "Type-Safe" monorepo mimarisi ile geliştirilmiştir:
 | :--- | :--- | :--- |
 | **Backend** | [NestJS](https://nestjs.com/) | Modüler ve ölçeklenebilir Node.js framework'ü. |
 | **Frontend** | [Next.js 16](https://nextjs.org/) | React Server Components, App Router. |
+| **Stil** | [TailwindCSS v4](https://tailwindcss.com/) | Yüksek performanslı CSS motoru. |
 | **Veritabanı** | PostgreSQL & [Prisma](https://www.prisma.io/) | Tip güvenli veritabanı erişimi ve şema yönetimi. |
 | **Arayüz** | [Shadcn/UI](https://ui.shadcn.com/) | Erişilebilir, özelleştirilebilir modern bileşenler. |
 | **Tarama** | AWS/Azure/GCP SDKs | Doğal bulut entegrasyonları. |
@@ -114,6 +121,7 @@ kivvat/
 │   ├── api/          # NestJS Backend (Tarama Motoru, REST API)
 │   └── web/          # Next.js Frontend (Dashboard, Denetçi Portalı)
 ├── packages/         # Ortak kütüphaneler ve konfigürasyonlar
+├── tools/            # CLI ve yardımcı araçlar
 └── turbo.json        # TurboRepo build yapılandırması
 ```
 
@@ -124,8 +132,8 @@ kivvat/
 - [x] Çoklu Bulut Desteği (AWS, Azure, GCP)
 - [x] Uyumluluk Raporlama Motoru
 - [x] Politika Yönetimi
-- [ ] **Olay Müdahale (Incident Response) Kaydı** (Planlanan)
-- [ ] **SSL/TLS Sertifika Takibi** (Planlanan)
+- [x] **Olay Müdahale (Incident Response)**
+- [x] **SSL/TLS Sertifika Takibi**
 - [ ] **İyileştirme Rehberi (Remediation Scenarios)** (Planlanan)
 
 ---

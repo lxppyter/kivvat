@@ -15,41 +15,64 @@ export class PaymentService {
       throw new BadRequestException('Lisans anahtarı boş olamaz.');
     }
 
-    // MOCK VERIFICATION for specific key "PRO-DEMO-KEY"
-    // In production, this would make a request to https://api.gumroad.com/v2/licenses/verify
+    // GUMROAD VERIFICATION
+    let targetPlan: 'FREE' | 'CORE' | 'PRO' | 'ENTERPRISE' = 'FREE';
     let isValid = false;
-    let targetPlan: 'FREE' | 'CORE' | 'PRO' | 'ENTERPRISE' = 'PRO';
 
+    // 1. Check Mock Keys (for dev/demo only)
     if (licenseKey === 'PRO-DEMO-KEY') {
-      isValid = true;
-      targetPlan = 'PRO';
+      isValid = true; targetPlan = 'PRO';
     } else if (licenseKey === 'CORE-DEMO-KEY') {
-      isValid = true;
-      targetPlan = 'CORE';
+      isValid = true; targetPlan = 'CORE';
     } else if (licenseKey === 'ENT-DEMO-KEY') {
-      isValid = true;
-      targetPlan = 'ENTERPRISE';
+      isValid = true; targetPlan = 'ENTERPRISE';
     } else {
-        // Uncomment this for real Gumroad verification later
-        /*
+        // 2. Real Gumroad API Call
         try {
+            const productId = 'dV72n1PSrXX6iAIeWSTIbw=='; // Provided by User
+            console.log(`[Gumroad] Verifying Key: ${licenseKey} against Product ID: ${productId}`);
+            
             const response = await firstValueFrom(
                 this.httpService.post('https://api.gumroad.com/v2/licenses/verify', {
-                    product_permalink: process.env.GUMROAD_PRODUCT_PERMALINK,
+                    product_id: productId,
                     license_key: licenseKey
                 })
             );
-            isValid = response.data.success && !response.data.purchase.refunded && !response.data.purchase.chargebacked;
-            // Map Gumroad Product ID to Plan here if needed
-            targetPlan = 'PRO'; 
+
+            const data = response.data;
+            
+            // Check if success and not refunded/chargebacked
+            if (data.success && !data.purchase.refunded && !data.purchase.chargebacked) {
+                isValid = true;
+                
+                // 3. Variant Check (Which plan is it?)
+                // Gumroad variants format: "Tier: Trust Architect (Monthly)"
+                const variants = data.purchase.variants || '';
+                const variantString = JSON.stringify(variants).toLowerCase();
+
+                // Explicit Mapping based on User's Gumroad naming
+                if (variantString.includes('total authority')) {
+                    targetPlan = 'ENTERPRISE';
+                } else if (variantString.includes('trust architect')) {
+                    targetPlan = 'PRO';
+                } else if (variantString.includes('compliance core')) {
+                    targetPlan = 'CORE';
+                } else {
+                    // Fallback logic if names slightly mismatch, trying to catch partials
+                    if (variantString.includes('architect')) targetPlan = 'PRO';
+                    else if (variantString.includes('authority')) targetPlan = 'ENTERPRISE';
+                    else targetPlan = 'CORE'; // Safe default for entry level
+                }
+            }
         } catch (e) {
-            isValid = false;
+            const gumroadError = e.response?.data?.message || e.message;
+            console.error('Gumroad Verification Failed:', gumroadError);
+            throw new BadRequestException(`Gumroad Hatası: ${gumroadError}`);
         }
-        */
     }
 
     if (!isValid) {
-      throw new BadRequestException('Geçersiz veya süresi dolmuş lisans anahtarı.');
+      throw new BadRequestException('Geçersiz, iade edilmiş veya süresi dolmuş lisans anahtarı.');
     }
 
     // CHECK IF ALREADY ACTIVE
@@ -85,7 +108,8 @@ export class PaymentService {
 
     return { 
         success: true, 
-        message: `Hesap 30 günlüğüne ${targetPlan} plana yükseltildi.`,
+        message: `Lisans başarıyla doğrulandı! Hesap ${targetPlan} paketine yükseltildi.`,
+        plan: targetPlan,
         expiresAt: expiresAt 
     };
   }

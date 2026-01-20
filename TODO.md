@@ -73,7 +73,7 @@ Bu dosya Kivvat projesinin anlık durumunu, tamamlanan özellikleri ve yapılmas
 - [x] **Configuration Drift:** Yapılandırma değişikliklerinin (Diff) analizi. [PRO]
 - [x] **Tedarikçi (Vendor) Risk Yönetimi:** 3. taraf yazılımların sertifika/güvenlik takibi. [PRO]
 - [x] **Ödeme Altyapısı (Gumroad):** Lisans anahtarı doğrulama (License Key Verification) sistemi.
-- [ ] **Landing Page UI & İçerik İyileştirmeleri:** Tasarımın cilalanması ve pazarlama metinlerinin güçlendirilmesi.
+- [x] **Landing Page UI & İçerik İyileştirmeleri:** Tasarımın cilalanması ve pazarlama metinlerinin güçlendirilmesi.
 - [x] **Sistem Güvenlik İyileştirmeleri:** OWASP Top 10 zafiyetlerine (Injection, Broken Auth vb.) göre sistemin güçlendirilmesi.
 
 ## 💰 Abonelik ve Paketleme (SaaS Model)

@@ -58,9 +58,11 @@ export function Pricing() {
                         Otomatik Tarama (Günlük)
                     </li>
                 </div>
-                <Button variant="outline" className="w-full rounded-none h-12 border-neutral-900 text-neutral-900 hover:bg-neutral-900 hover:text-white transition-colors font-mono uppercase text-xs tracking-wider">
-                    SEÇ & BAŞLA
-                </Button>
+                <Link href="/register" className="w-full">
+                    <Button variant="outline" className="w-full rounded-none h-12 border-neutral-900 text-neutral-900 hover:bg-neutral-900 hover:text-white transition-colors font-mono uppercase text-xs tracking-wider">
+                        SEÇ & BAŞLA
+                    </Button>
+                </Link>
             </div>
 
             {/* PLAN 2: TRUST ARCHITECT (Popular) */}
@@ -103,9 +105,11 @@ export function Pricing() {
                         + Tüm Core Özellikleri
                     </li>
                 </div>
-                <Button className="w-full h-12 bg-primary hover:bg-primary/90 text-white transition-colors font-mono uppercase text-xs tracking-wider">
-                    HEMEN BAŞLA
-                </Button>
+                <Link href="/register" className="w-full">
+                    <Button className="w-full h-12 bg-primary hover:bg-primary/90 text-white transition-colors font-mono uppercase text-xs tracking-wider">
+                        HEMEN BAŞLA
+                    </Button>
+                </Link>
             </div>
 
             {/* PLAN 3: TOTAL AUTHORITY */}
@@ -141,9 +145,11 @@ export function Pricing() {
                         + Tüm Architect Özellikleri
                     </li>
                 </div>
-                <Button variant="outline" className="w-full rounded-none h-12 border-neutral-900 text-neutral-900 hover:bg-neutral-900 hover:text-white transition-colors font-mono uppercase text-xs tracking-wider">
-                    SEÇ & BAŞLA
-                </Button>
+                <Link href="/register" className="w-full">
+                    <Button variant="outline" className="w-full rounded-none h-12 border-neutral-900 text-neutral-900 hover:bg-neutral-900 hover:text-white transition-colors font-mono uppercase text-xs tracking-wider">
+                        SEÇ & BAŞLA
+                    </Button>
+                </Link>
             </div>
 
         </div>
