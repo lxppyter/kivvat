@@ -11,7 +11,7 @@ export function Pricing() {
       <div className="container mx-auto px-6">
         <div className="mb-20">
            <span className="font-mono text-xs font-bold text-primary tracking-widest uppercase mb-4 block">
-            INVESTMENT
+            YATIRIM
           </span>
           <h2 className="text-5xl lg:text-7xl font-bold tracking-tighter bg-gradient-to-b from-neutral-900 to-neutral-500 text-transparent bg-clip-text leading-[0.9] mb-6">
             FİYATLANDIRMA.
@@ -42,19 +42,19 @@ export function Pricing() {
                     </li>
                     <li className="flex text-sm text-neutral-700">
                         <Check className="h-4 w-4 text-primary mr-3 flex-shrink-0" />
-                        1 AWS/Azure Hesabı Taraması
+                        1 Bulut Hesabı Bağlantısı
                     </li>
                     <li className="flex text-sm text-neutral-700">
                         <Check className="h-4 w-4 text-primary mr-3 flex-shrink-0" />
-                        Hazır Politika Kütüphanesi (20+)
+                        Temel Varlık Envanteri
                     </li>
                     <li className="flex text-sm text-neutral-700">
                         <Check className="h-4 w-4 text-primary mr-3 flex-shrink-0" />
-                        Varlık Envanteri (Asset Mgmt)
+                        Politika Yönetimi & İmza
                     </li>
                     <li className="flex text-sm text-neutral-700">
                         <Check className="h-4 w-4 text-primary mr-3 flex-shrink-0" />
-                        Aylık PDF Durum Raporu
+                        Otomatik Tarama (Günlük)
                     </li>
                 </div>
                 <Button variant="outline" className="w-full rounded-none h-12 border-neutral-900 text-neutral-900 hover:bg-neutral-900 hover:text-white transition-colors font-mono uppercase text-xs tracking-wider">
@@ -80,29 +80,29 @@ export function Pricing() {
                 <div className="space-y-4 mb-8 flex-1">
                     <li className="flex text-sm text-neutral-900 font-bold">
                         <Globe className="h-4 w-4 text-primary mr-3 flex-shrink-0" />
-                        Hibrit Standart (3 Adete Kadar)
-                    </li>
-                    <li className="flex text-sm text-neutral-700">
-                        <Zap className="h-4 w-4 text-primary mr-3 flex-shrink-0" />
-                        Sürekli Denetim (7/24 İhlal Uyarısı)
-                    </li>
-                    <li className="flex text-sm text-neutral-700">
-                        <PlayCircle className="h-4 w-4 text-primary mr-3 flex-shrink-0" />
-                        Personel Farkındalık Modülü
+                        3 Bulut Hesabı (AWS/Azure)
                     </li>
                     <li className="flex text-sm text-neutral-700">
                         <ShieldCheck className="h-4 w-4 text-primary mr-3 flex-shrink-0" />
-                        Zafiyet Tarama Entegrasyonu
+                        3 Uyumluluk Standardı
+                    </li>
+                    <li className="flex text-sm text-neutral-700">
+                        <Zap className="h-4 w-4 text-primary mr-3 flex-shrink-0" />
+                        Olay Yönetimi (Incidents)
+                    </li>
+                    <li className="flex text-sm text-neutral-700">
+                        <Server className="h-4 w-4 text-primary mr-3 flex-shrink-0" />
+                        Tedarikçi Yönetimi (Vendors)
                     </li>
                     <li className="flex text-sm text-neutral-700">
                         <Check className="h-4 w-4 text-primary mr-3 flex-shrink-0" />
-                        Slack/Teams Bildirimleri
+                        SSL/TLS Sertifika Takibi
                     </li>
                      <li className="flex text-sm text-neutral-400 pl-7">
                         + Tüm Core Özellikleri
                     </li>
                 </div>
-                <Button className="w-full rounded-none h-12 bg-primary hover:bg-primary/90 hover:tranneutral-y-0 transform-none text-white transition-colors font-mono uppercase text-xs tracking-wider">
+                <Button className="w-full h-12 bg-primary hover:bg-primary/90 text-white transition-colors font-mono uppercase text-xs tracking-wider">
                     HEMEN BAŞLA
                 </Button>
             </div>
@@ -126,23 +126,22 @@ export function Pricing() {
                     </li>
                     <li className="flex text-sm text-neutral-700">
                         <Lock className="h-4 w-4 text-primary mr-3 flex-shrink-0" />
-                        Rol Tabanlı Erişim (RBAC)
+                        Denetçi Portalı (Audit Share)
                     </li>
                     <li className="flex text-sm text-neutral-700">
                         <FileText className="h-4 w-4 text-primary mr-3 flex-shrink-0" />
-                        Özel Denetçi Portalı (Read-Only)
-                    </li>
-                     <li className="flex text-sm text-neutral-700">
-                        <LayoutTemplate className="h-4 w-4 text-primary mr-3 flex-shrink-0" />
-                        White-Labeling (Logo Ekleme)
+                        Öncelikli 7/24 Destek
                     </li>
                     <li className="flex text-sm text-neutral-700">
-                         <Server className="h-4 w-4 text-primary mr-3 flex-shrink-0" />
-                        API Erişimi
+                        <LayoutTemplate className="h-4 w-4 text-primary mr-3 flex-shrink-0" />
+                        Özel Sözleşme & Fatura
+                    </li>
+                    <li className="flex text-sm text-neutral-400 pl-7">
+                        + Tüm Architect Özellikleri
                     </li>
                 </div>
                 <Button variant="outline" className="w-full rounded-none h-12 border-neutral-900 text-neutral-900 hover:bg-neutral-900 hover:text-white transition-colors font-mono uppercase text-xs tracking-wider">
-                    İLETİŞİME GEÇ
+                    SEÇ & BAŞLA
                 </Button>
             </div>
 

@@ -138,7 +138,7 @@ export function SolutionSteps() {
                     <div className="flex justify-between items-center p-6 border-b border-[#252525] bg-[#0e0e0e]/50">
                          <div className="flex items-baseline gap-2">
                              <span className="font-mono text-xs text-primary">
-                                 STEP
+                                 ADIM
                              </span>
                              <span className="font-mono text-xl font-bold text-[#e7e6d9]">
                                 {step.id}

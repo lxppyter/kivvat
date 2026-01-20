@@ -58,7 +58,7 @@ export function ComparisonTable() {
         {/* Header - Matching SolutionSteps Typography */}
         <div className="mb-24">
           <span className="font-mono text-xs font-bold text-primary tracking-widest uppercase mb-4 block">
-            BENCHMARK
+            KARŞILAŞTIR
           </span>
           <h2 className="text-5xl lg:text-7xl font-bold tracking-tighter text-[#e7e6d9] leading-tight">
             NEDEN <br />
@@ -89,7 +89,7 @@ export function ComparisonTable() {
               <tr className="hover:bg-[#111]/50 transition-colors">
                 <td className="p-8 font-bold text-[#e7e6d9] border-r border-[#252525]">Hazırlık Süresi</td>
                 <td className="p-8 text-[#888] border-r border-[#252525] text-[#444] line-through decoration-[#999] decoration-2">6-12 Ay</td>
-                <td className="p-8 text-primary font-bold">2-4 Hafta</td>
+                <td className="p-8 text-primary font-bold">Dakikalar İçinde</td>
               </tr>
 
               <tr className="hover:bg-[#111]/50 transition-colors">

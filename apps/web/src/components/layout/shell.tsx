@@ -33,7 +33,7 @@ export function Shell({ children, className, ...props }: ShellProps) {
        <AuditorBanner />
        <div className="flex flex-1">
           <Sidebar />
-          <div className="flex-1 ml-64 flex flex-col">
+          <div className="flex-1 md:ml-64 flex flex-col">
             <Header />
             <main className={cn("flex-1 p-8 md:p-12", className)} {...props}>
                 <div className="mx-auto max-w-6xl space-y-8">

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { compliance, policy } from "@/lib/api";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -12,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ShieldCheck, FileText, Lock, AlertTriangle, CheckCircle2, Download, Cloud, Users, Mail, Link as LinkIcon, Copy } from "lucide-react";
+import { ShieldCheck, FileText, Lock, AlertTriangle, CheckCircle2, Download, Cloud, Users, Mail, Link as LinkIcon, Copy, Info } from "lucide-react";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
 
@@ -21,7 +20,7 @@ interface Control {
   code: string;
   name: string;
   description: string;
-  status?: 'COMPLIANT' | 'NON_COMPLIANT' | 'PENDING';
+  status?: 'COMPLIANT' | 'NON_COMPLIANT' | 'PENDING' | 'UNSCANNED';
 }
 
 interface Standard {
@@ -29,14 +28,19 @@ interface Standard {
   name: string;
   description: string;
   complianceScore: number;
+  analyzed?: boolean;
   controls: Control[];
 }
 
+import { auth, compliance, policy } from "@/lib/api";
+
 export default function PoliciesPage() {
   const [isAuditor, setIsAuditor] = useState(false);
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     setIsAuditor(Cookies.get("user_role") === "AUDITOR");
+    auth.getProfile().then(res => setUser(res.data)).catch(console.error);
   }, []);
 
   const [standards, setStandards] = useState<Standard[]>([]);
@@ -158,7 +162,7 @@ export default function PoliciesPage() {
     };
 
   return (
-    <div className="space-y-8 p-8 max-w-7xl mx-auto">
+    <div className="space-y-8 p-4 md:p-8 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">
@@ -173,16 +177,16 @@ export default function PoliciesPage() {
         <div className="flex gap-4"><div className="w-full h-32 bg-muted/20 animate-pulse rounded-lg"/></div>
       ) : (
         <Tabs defaultValue="dashboard" className="w-full space-y-6">
-            <TabsList className="bg-muted/50 p-1">
-                <TabsTrigger value="dashboard">Gap Analysis Dashboard</TabsTrigger>
-                <TabsTrigger value="documents">Document Library ({templates.length})</TabsTrigger>
-                <TabsTrigger value="signatures">Signatures & Status</TabsTrigger>
-                <TabsTrigger value="controls">All Controls ({standards.reduce((acc, s) => acc + s.controls.length, 0)})</TabsTrigger>
+            <TabsList className="bg-muted/50 p-1 w-full flex flex-wrap h-auto gap-1">
+                <TabsTrigger value="dashboard" className="flex-1 min-w-fit">Gap Analysis Dashboard</TabsTrigger>
+                <TabsTrigger value="documents" className="flex-1 min-w-fit">Document Library ({templates.length})</TabsTrigger>
+                <TabsTrigger value="signatures" className="flex-1 min-w-fit">Signatures & Status</TabsTrigger>
+                <TabsTrigger value="controls" className="flex-1 min-w-fit">All Controls ({standards.reduce((acc, s) => acc + s.controls.length, 0)})</TabsTrigger>
             </TabsList>
 
             {/* DASHBOARD TAB */}
             <TabsContent value="dashboard" className="space-y-6">
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Overall Compliance</CardTitle>
@@ -190,10 +194,10 @@ export default function PoliciesPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">
-                                {standards.length > 0 ? Math.round(standards.reduce((acc, s) => acc + s.complianceScore, 0) / standards.length) : 0}%
+                                {standards.some(s => s.analyzed) ? (standards.length > 0 ? Math.round(standards.reduce((acc, s) => acc + s.complianceScore, 0) / standards.length) : 0) + "%" : "-"}
                             </div>
                             <p className="text-xs text-muted-foreground">Across all standards</p>
-                            <Progress value={standards.length > 0 ? Math.round(standards.reduce((acc, s) => acc + s.complianceScore, 0) / standards.length) : 0} className="mt-3 h-2" />
+                            <Progress value={standards.some(s => s.analyzed) && standards.length > 0 ? Math.round(standards.reduce((acc, s) => acc + s.complianceScore, 0) / standards.length) : 0} className="mt-3 h-2" />
                         </CardContent>
                     </Card>
                     <Card>
@@ -203,9 +207,11 @@ export default function PoliciesPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">
-                                {standards.reduce((acc, s) => acc + s.controls.filter(c => c.status === 'NON_COMPLIANT' || c.status === 'PENDING').length, 0)}
+                                {standards.some(s => s.analyzed) ? standards.reduce((acc, s) => acc + s.controls.filter(c => c.status === 'NON_COMPLIANT' || c.status === 'PENDING').length, 0) : "-"}
                             </div>
-                            <p className="text-xs text-muted-foreground">High priority issues</p>
+                            <p className="text-xs text-muted-foreground">
+                                {standards.some(s => s.analyzed) ? "High priority issues" : "Analysis Required"}
+                            </p>
                         </CardContent>
                     </Card>
                     <Card>
@@ -215,7 +221,7 @@ export default function PoliciesPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">
-                                {standards.reduce((acc, s) => acc + s.controls.filter(c => c.status === 'COMPLIANT').length, 0)}
+                                {standards.some(s => s.analyzed) ? standards.reduce((acc, s) => acc + s.controls.filter(c => c.status === 'COMPLIANT').length, 0) : "-"}
                             </div>
                             <p className="text-xs text-muted-foreground">Controls monitored by Rule Engine</p>
                         </CardContent>
@@ -305,17 +311,17 @@ export default function PoliciesPage() {
                     <CardContent className="p-0">
                          <div className="divide-y divide-border/50">
                             {templates.map((tmpl, i) => (
-                                <div key={i} className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
-                                    <div className="flex items-center gap-4">
-                                        <div className="h-10 w-10 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+                                <div key={i} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between p-4 hover:bg-muted/50 transition-colors">
+                                    <div className="flex items-center gap-4 min-w-0">
+                                        <div className="h-10 w-10 rounded-lg bg-indigo-500/10 flex items-center justify-center shrink-0">
                                             <FileText className="h-5 w-5 text-indigo-500" />
                                         </div>
-                                        <div>
-                                            <h4 className="font-semibold text-sm">{tmpl.name}</h4>
-                                            <p className="text-xs text-muted-foreground">Category: {tmpl.category}</p>
+                                        <div className="min-w-0">
+                                            <h4 className="font-semibold text-sm truncate">{tmpl.name}</h4>
+                                            <p className="text-xs text-muted-foreground truncate">Category: {tmpl.category}</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                                         <Badge variant="outline" className="border-emerald-500/20 text-emerald-500 bg-emerald-500/5">
                                             available
                                         </Badge>
@@ -514,21 +520,31 @@ export default function PoliciesPage() {
                                 <div className="p-4 text-center text-sm text-muted-foreground font-mono">Veri bulunamadı.</div>
                             ) : (
                                 signatureStats.map((stat) => (
-                                    <div key={stat.id} className="flex items-center justify-between p-4 border rounded-lg bg-card/40">
-                                        <div className="flex items-center gap-4">
-                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold overflow-hidden">
+                                    <div key={stat.id} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between p-4 border rounded-lg bg-card/40">
+                                        <div className="flex items-center gap-4 w-full sm:w-auto">
+                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold overflow-hidden shrink-0">
                                                 {stat.name ? stat.name.charAt(0).toUpperCase() : '?'}
                                             </div>
-                                            <div>
-                                                <p className="text-sm font-medium font-mono">{stat.name}</p>
-                                                <p className="text-xs text-muted-foreground font-mono">{stat.email} • {stat.role || 'STAFF'}</p>
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-medium font-mono truncate">{stat.name}</p>
+                                                <p className="text-xs text-muted-foreground font-mono truncate">{stat.email} • {stat.role || 'STAFF'}</p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-6">
-                                            <div className="text-right">
+                                        <div className="flex flex-wrap items-center gap-4 sm:gap-6 w-full sm:w-auto justify-between sm:justify-end">
+                                            <div className="text-left sm:text-right">
                                                 <p className="text-xs text-muted-foreground font-mono">İmzalanan</p>
                                                 <p className="text-sm font-bold font-mono">{stat.signedCount} / {stat.totalPolicies}</p>
                                             </div>
+                                            
+                                            {stat.lastIp && (
+                                                <div 
+                                                    className="cursor-help" 
+                                                    title={`Audit Log\nIP: ${stat.lastIp}\nDevice: ${stat.lastUserAgent || 'Unknown'}\nTimestamp: ${new Date(stat.lastSigned).toLocaleString()}`}
+                                                >
+                                                    <Info className="h-4 w-4 text-blue-500/70 hover:text-blue-600" />
+                                                </div>
+                                            )}
+
                                             <Badge variant="outline" className={`font-mono ${stat.status === 'COMPLIANT' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-amber-500/10 text-amber-500 border-amber-500/20'}`}>
                                                 {stat.status === 'COMPLIANT' ? 'TAMAMLANDI' : 'BEKLİYOR'}
                                             </Badge>
@@ -625,14 +641,14 @@ export default function PoliciesPage() {
                             </pre>
                         </div>
                     </ScrollArea>
-                    <DialogFooter className="flex items-center justify-between sm:justify-between w-full mt-4">
-                        <span className="text-xs text-muted-foreground">
+                    <DialogFooter className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 w-full">
+                        <span className="text-xs text-muted-foreground text-center sm:text-left">
                             By clicking "I Agree", you digitally sign this document with timestamp.
                         </span>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 w-full sm:w-auto justify-end">
                             <Button variant="outline" onClick={() => setSelectedPolicy(null)}>Cancel</Button>
                             {!isAuditor && (
-                                <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={async () => {
+                                <Button className="bg-emerald-600 hover:bg-emerald-700 whitespace-nowrap px-6" onClick={async () => {
                                     if (!selectedPolicy) return;
                                     try {
                                         const { policy } = await import("@/lib/api");
@@ -666,6 +682,18 @@ export default function PoliciesPage() {
 
             {/* CONTROLS LIST TAB (Original View) */}
             <TabsContent value="controls">
+                {(!user || !['PRO', 'ENTERPRISE'].includes(user.plan)) ? (
+                    <div className="flex flex-col items-center justify-center p-12 border border-dashed border-border rounded-xl bg-muted/30">
+                        <Lock className="h-12 w-12 text-muted-foreground mb-4 opacity-50" />
+                        <h3 className="text-xl font-bold mb-2">Detailed Control Monitoring</h3>
+                        <p className="text-muted-foreground text-center max-w-md mb-6">
+                            Access to granular control status, evidence audit trails, and specific compliance mapping is available only on <strong>Trust Architect</strong> and above.
+                        </p>
+                        <Button onClick={() => window.location.href = '/settings/billing'} className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0">
+                            Upgrade to Unlock
+                        </Button>
+                    </div>
+                ) : (
                 <div className="grid gap-6">
                     {standards.map((std) => (
                         <div key={std.id} className="border border-border/50 rounded-xl overflow-hidden bg-card shadow-sm">
@@ -693,6 +721,9 @@ export default function PoliciesPage() {
                                                 )}
                                                 {control.status === 'PENDING' && (
                                                     <Badge variant="outline" className="text-muted-foreground mr-4">Pending</Badge>
+                                                )}
+                                                {control.status === 'UNSCANNED' && (
+                                                    <Badge variant="outline" className="text-muted-foreground/50 mr-4 border-dashed">Not Scanned</Badge>
                                                 )}
                                             </div>
                                         </AccordionTrigger>
@@ -730,6 +761,7 @@ export default function PoliciesPage() {
                         </div>
                     ))}
                 </div>
+                )}
             </TabsContent>
         </Tabs>
       )}

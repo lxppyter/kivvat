@@ -23,6 +23,24 @@ let PolicyService = class PolicyService {
         });
     }
     async getAssignments(userId) {
+        if (userId) {
+            const allPolicies = await this.prisma.policyTemplate.findMany({ select: { id: true } });
+            const existingAssignments = await this.prisma.policyAssignment.findMany({
+                where: { userId },
+                select: { policyId: true }
+            });
+            const existingIds = new Set(existingAssignments.map(a => a.policyId));
+            const missing = allPolicies.filter(p => !existingIds.has(p.id));
+            if (missing.length > 0) {
+                await this.prisma.policyAssignment.createMany({
+                    data: missing.map(p => ({
+                        userId,
+                        policyId: p.id,
+                        status: 'PENDING'
+                    }))
+                });
+            }
+        }
         const whereClause = userId ? { userId } : {};
         const assignments = await this.prisma.policyAssignment.findMany({
             where: whereClause,
@@ -96,12 +114,13 @@ let PolicyService = class PolicyService {
             content,
         };
     }
-    async createShareLink(policyId, expiresAt) {
+    async createShareLink(policyId, expiresAt, creatorId) {
         const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
         if (!expiresAt) {
             const existing = await this.prisma.policyShare.findFirst({
                 where: {
                     policyId: policyId || null,
+                    creatorId: creatorId || null,
                     active: true,
                     OR: [
                         { expiresAt: null },
@@ -125,6 +144,7 @@ let PolicyService = class PolicyService {
                 token,
                 policyId: policyId || undefined,
                 expiresAt: expiresAt ? new Date(expiresAt) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+                creatorId,
             }
         });
         return {
@@ -158,7 +178,7 @@ let PolicyService = class PolicyService {
             policy: share.policy
         };
     }
-    async signPublicPolicy(token, signerName, signerEmail, policyId) {
+    async signPublicPolicy(token, signerName, signerEmail, policyId, ip, userAgent) {
         const share = await this.prisma.policyShare.findUnique({ where: { token } });
         if (!share)
             throw new Error("Invalid token");
@@ -185,13 +205,16 @@ let PolicyService = class PolicyService {
                 signerName,
                 signerEmail,
                 status: 'SIGNED',
-                signedAt: new Date()
+                signedAt: new Date(),
+                ownerId: share.creatorId,
+                ipAddress: ip,
+                userAgent: userAgent
             }
         });
     }
-    async getShares() {
+    async getShares(userId) {
         return this.prisma.policyShare.findMany({
-            where: { active: true },
+            where: { active: true, creatorId: userId },
             include: { policy: { select: { name: true } } },
             orderBy: { createdAt: 'desc' }
         });

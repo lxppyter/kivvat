@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Delete, Param, UseGuards, Request }
 import { AssetService } from './asset.service';
 import { AuthGuard } from '@nestjs/passport';
 import { SubscriptionGuard } from '../common/guards/subscription.guard';
+import { ProGuard } from '../common/guards/pro.guard';
 
 @Controller('assets')
 @UseGuards(AuthGuard('jwt'), SubscriptionGuard)
@@ -23,6 +24,13 @@ export class AssetController {
   @Patch(':id')
   async update(@Param('id') id: string, @Body() body: any) {
     return this.assetService.update(id, body);
+  }
+
+  @Get(':id/history')
+  // Ensure only PRO users can see detailed history as per TODO.md [PRO]
+  @UseGuards(ProGuard)
+  getHistory(@Param('id') id: string) {
+      return this.assetService.getHistory(id);
   }
 
   @Delete(':id')

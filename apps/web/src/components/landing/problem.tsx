@@ -60,11 +60,11 @@ export function ProblemSection() {
           </span>
 
           <h2 className="text-5xl lg:text-7xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-neutral-900 to-neutral-500 leading-[0.9] mb-8">
-            UYUMLULUK SÜREÇLERİNİ <span className="relative inline-block mx-2"><TextStrikethrough color="#381D2A" className="text-neutral-900">MANUEL</TextStrikethrough></span> <br/>
+            BULUT UYUMLULUĞUNU <span className="relative inline-block mx-2"><TextStrikethrough color="#381D2A" className="text-neutral-900">MANUEL</TextStrikethrough></span> <br/>
             <span className="text-[#381D2A] block mt-2">YÖNETMEYİN.</span>
           </h2>
           <p className="text-lg text-neutral-600 font-light leading-relaxed">
-            Manuel süreçler, güvenlik açıkları ve kaçan fırsatlar. Geleneksel yöntemler modern bulut hızına yetişemiyor.
+            Excel tabloları ve pahalı danışmanlar, modern bulut altyapılarının hızına yetişemez. Otonom sistemlerle riskleri sıfıra indirin.
           </p>
         </div>
 

@@ -20,6 +20,11 @@ export class SslService {
           cleanDomain = domain;
       }
       
+      // Handle paths without protocol (e.g. google.com/foo)
+      if (cleanDomain.includes('/')) {
+          cleanDomain = cleanDomain.split('/')[0];
+      }
+      
       const options = {
         host: cleanDomain,
         port: 443,

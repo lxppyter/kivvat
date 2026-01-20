@@ -19,6 +19,13 @@ export class SubscriptionGuard implements CanActivate {
     const dbUser = await this.prisma.user.findUnique({
       where: { id: userId },
     });
+    
+    // Refresh request.user with latest DB data so subsequent guards (like ProGuard) see the update immediately
+    if (dbUser) {
+        request.user.plan = dbUser.plan;
+        request.user.role = dbUser.role;
+        request.user.licenseExpiresAt = dbUser.licenseExpiresAt;
+    }
 
     if (!dbUser) {
       throw new UnauthorizedException('Kullanıcı bulunamadı.');

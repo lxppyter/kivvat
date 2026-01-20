@@ -13,6 +13,28 @@ export class PolicyService {
 
 
   async getAssignments(userId?: string) {
+    // Lazy Assign: If userId is provided, ensure they have assignments for all policies
+    if (userId) {
+        const allPolicies = await this.prisma.policyTemplate.findMany({ select: { id: true } });
+        const existingAssignments = await this.prisma.policyAssignment.findMany({
+            where: { userId },
+            select: { policyId: true }
+        });
+        
+        const existingIds = new Set(existingAssignments.map(a => a.policyId));
+        const missing = allPolicies.filter(p => !existingIds.has(p.id));
+        
+        if (missing.length > 0) {
+            await this.prisma.policyAssignment.createMany({
+                data: missing.map(p => ({
+                    userId,
+                    policyId: p.id,
+                    status: 'PENDING'
+                }))
+            });
+        }
+    }
+
     const whereClause = userId ? { userId } : {};
     
     const assignments = await this.prisma.policyAssignment.findMany({
@@ -105,23 +127,21 @@ export class PolicyService {
 
   // --- Public Team Sharing Logic ---
 
-  async createShareLink(policyId?: string, expiresAt?: Date | string) {
+  async createShareLink(policyId?: string, expiresAt?: Date | string, creatorId?: string) {
     const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     
-    // Check if valid active share exists (ONLY if not requesting a specific expiration change? 
-    // Actually, for simplicity, if user requests a new one with specific expiry, maybe we should create new or update?
-    // Let's assume if no expiresAt is provided, we try to reuse. If provided, we create new.)
-    
+    // Check if valid active share exists for this creator
     if (!expiresAt) {
         const existing = await this.prisma.policyShare.findFirst({
             where: {
                 policyId: policyId || null,
+                creatorId: creatorId || null, // Check per tenant
                 active: true,
                 OR: [
                     { expiresAt: null },
                     { expiresAt: { gt: new Date() } }
                 ]
-            },
+            } as any,
             orderBy: { createdAt: 'desc' }
         });
 
@@ -143,7 +163,8 @@ export class PolicyService {
         token,
         policyId: policyId || undefined,
         expiresAt: expiresAt ? new Date(expiresAt) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Default 30 days
-      }
+        creatorId,
+      } as any
     });
 
     return { 
@@ -183,7 +204,7 @@ export class PolicyService {
     };
   }
 
-  async signPublicPolicy(token: string, signerName: string, signerEmail: string, policyId?: string) {
+  async signPublicPolicy(token: string, signerName: string, signerEmail: string, policyId?: string, ip?: string, userAgent?: string) {
     const share = await this.prisma.policyShare.findUnique({ where: { token } });
     if (!share) throw new Error("Invalid token");
 
@@ -215,15 +236,18 @@ export class PolicyService {
         signerName,
         signerEmail,
         status: 'SIGNED',
-        signedAt: new Date()
-      }
+        signedAt: new Date(),
+        ownerId: (share as any).creatorId, // Link to tenant
+        ipAddress: ip,
+        userAgent: userAgent
+      } as any
     });
   }
 
 
-  async getShares() {
+  async getShares(userId: string) {
     return this.prisma.policyShare.findMany({
-      where: { active: true },
+      where: { active: true, creatorId: userId },
       include: { policy: { select: { name: true } } },
       orderBy: { createdAt: 'desc' }
     });

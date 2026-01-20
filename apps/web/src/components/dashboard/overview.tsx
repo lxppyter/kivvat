@@ -20,10 +20,10 @@ export default function DashboardOverview({ items, loading: pLoading }: { items:
   }, []);
   // Real data state
   const [stats, setStats] = useState([
-      { title: "Risk Score", value: "A+", subtext: "Excellent Standing", trend: "stable", icon: ShieldCheck },
-      { title: "Active Issues", value: "0", subtext: "0 Critical, 0 High", trend: "down", icon: AlertTriangle },
-      { title: "Compliance", value: "100%", subtext: "ISO 27001 Ready", trend: "up", icon: CheckCircle2 },
-      { title: "Cloud Assets", value: "0", subtext: "Total Resources", trend: "up", icon: Activity },
+      { title: "Risk Score", value: "-", subtext: "Not Scanned", trend: "stable", icon: ShieldCheck },
+      { title: "Active Issues", value: "-", subtext: "Waiting for Scan", trend: "stable", icon: AlertTriangle },
+      { title: "Compliance", value: "-", subtext: "Not Calculated", trend: "stable", icon: CheckCircle2 },
+      { title: "Scanned Assets", value: "-", subtext: "0 Assets", trend: "stable", icon: Activity },
   ]);
   const [activities, setActivities] = useState<any[]>([]);
 
@@ -124,6 +124,7 @@ export default function DashboardOverview({ items, loading: pLoading }: { items:
         onOpenChange={setScanDialogOpen} 
         onScan={handleScanStart}
         loading={loading}
+        userPlan={null}
       />
 
       {/* Header & Actions */}

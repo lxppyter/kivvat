@@ -34,6 +34,13 @@ let CloudController = class CloudController {
             limit = 3;
         else if (user.plan === 'ENTERPRISE')
             limit = 999;
+        const p = provider.toLowerCase();
+        if (p === 'azure' && !['PRO', 'ENTERPRISE'].includes(user.plan)) {
+            throw new common_1.ForbiddenException("Azure bağlantısı sadece Trust Architect (PRO) ve üzeri paketlerde mevcuttur.");
+        }
+        if (p === 'gcp' && user.plan !== 'ENTERPRISE') {
+            throw new common_1.ForbiddenException("GCP bağlantısı sadece Total Authority (ENTERPRISE) paketinde mevcuttur.");
+        }
         if (currentCount >= limit) {
             throw new common_1.ForbiddenException(`Plan limitinize ulaştınız (${limit} Bulut Hesabı). Lütfen paketinizi yükseltin.`);
         }

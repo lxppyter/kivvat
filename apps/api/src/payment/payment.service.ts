@@ -74,6 +74,12 @@ export class PaymentService {
         licenseKey: licenseKey,
         licenseExpiresAt: expiresAt,
         subscriptionStatus: 'active',
+        subscription: {
+          update: {
+            plan: targetPlan,
+            status: 'ACTIVE'
+          }
+        }
       },
     });
 

@@ -129,7 +129,7 @@ export class ScannerService {
           remediation: r.status === 'NON_COMPLIANT' ? this.getRemediation(r.ruleId) : undefined
       }));
 
-      await this.processResults(results, plan);
+      await this.processResults(results, plan, userId);
       
       // Save Scan Report (Evidence-Auto)
       const passCount = results.filter(r => r.status === 'COMPLIANT').length;
@@ -213,7 +213,7 @@ export class ScannerService {
       return results;
   }
 
-  private async processResults(results: ScanResult[], plan: string) {
+  private async processResults(results: ScanResult[], plan: string, userId: string) {
     // ONE-TO-MANY VALIDATION: Check each result against multiple standards
     for (const res of results) {
         const mappedCodes = this.getControlCode(res.ruleId);
@@ -248,6 +248,7 @@ export class ScannerService {
                     source: 'Cloud-Guardian',
                     checkName: `${res.ruleId} (${res.resourceId})`,
                     resourceId: res.resourceId,
+                    userId, // Inject User ID
                     result: res as any,
                     gaps: {
                       create: {

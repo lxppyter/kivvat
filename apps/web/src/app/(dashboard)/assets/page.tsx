@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { assets } from "@/lib/api";
 import api from "@/lib/api";
-import { Server, RefreshCw, Loader2, Database, HardDrive, Shield, Laptop, Network, Cloud, Plus, Smartphone, AppWindow, Calendar, FileSpreadsheet, Pencil, Trash, MoreHorizontal, AlertTriangle, Globe, Lock } from "lucide-react";
+import { Server, RefreshCw, Loader2, Database, HardDrive, Shield, Laptop, Network, Cloud, Plus, Smartphone, AppWindow, Calendar, FileSpreadsheet, Pencil, Trash, MoreHorizontal, AlertTriangle, Globe, Lock, History, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -284,9 +284,16 @@ export default function AssetsPage() {
       setIsAuditor(Cookies.get("user_role") === "AUDITOR");
   }, []);
 
+  const [historyId, setHistoryId] = useState<string | null>(null);
+
+  const handleHistory = (asset: any) => {
+      setHistoryId(asset.id);
+  }
+
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between border-b border-border/60 pb-8">
+      {/* ... existing headers ... */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-border/60 pb-8">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground font-mono">Varlık ve Lisans Yönetimi</h1>
           <p className="text-sm text-muted-foreground font-mono mt-1">
@@ -294,36 +301,37 @@ export default function AssetsPage() {
           </p>
         </div>
         
-        {!isAuditor && (
-        <div className="flex gap-3">
-             <Button variant="secondary" className="gap-2" onClick={handleDownloadTemplate}>
-                <FileSpreadsheet className="h-4 w-4" />
-                Şablon İndir
-             </Button>
-
-             <div className="relative">
-                <Input 
-                    type="file" 
-                    accept=".xlsx, .xls" 
-                    className="hidden" 
-                    ref={fileInputRef}
-                    onChange={handleFileUpload}
-                />
-                <Button variant="outline" className="gap-2" onClick={() => fileInputRef.current?.click()}>
-                    <Plus className="h-4 w-4 text-green-600" />
-                    Excel Yükle
+        <div className="flex flex-wrap gap-3 w-full md:w-auto">
+            {!isAuditor && (
+            <>
+                <Button variant="secondary" className="gap-2 whitespace-nowrap" onClick={handleDownloadTemplate}>
+                    <FileSpreadsheet className="h-4 w-4" />
+                    Şablon İndir
                 </Button>
-            </div>
-        </div>
-        )}
 
-        {!isAuditor && (
-            <Dialog open={isAddOpen} onOpenChange={(open) => { setIsAddOpen(open); if(!open) resetForm(); }}>
-                <DialogTrigger asChild>
-                    <Button className="gap-2">
-                        <Plus className="h-4 w-4" /> Varlık / Lisans Ekle
+                <div className="relative">
+                    <Input 
+                        type="file" 
+                        accept=".xlsx, .xls" 
+                        className="hidden" 
+                        ref={fileInputRef}
+                        onChange={handleFileUpload}
+                    />
+                    <Button variant="outline" className="gap-2 whitespace-nowrap" onClick={() => fileInputRef.current?.click()}>
+                        <Plus className="h-4 w-4 text-green-600" />
+                        Excel Yükle
                     </Button>
-                </DialogTrigger>
+                </div>
+            </>
+            )}
+
+            {!isAuditor && (
+                <Dialog open={isAddOpen} onOpenChange={(open) => { setIsAddOpen(open); if(!open) resetForm(); }}>
+                    <DialogTrigger asChild>
+                        <Button className="gap-2 whitespace-nowrap">
+                            <Plus className="h-4 w-4" /> Varlık / Lisans Ekle
+                        </Button>
+                    </DialogTrigger>
                 <DialogContent className="sm:max-w-[500px]">
                     <DialogHeader>
                         <DialogTitle>{editingId ? "Varlığı Düzenle" : "Envantere Kayıt Ekle"}</DialogTitle>
@@ -410,7 +418,8 @@ export default function AssetsPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        )}
+            )}
+        </div>
       </div>
       
       {!isAuditor && (
@@ -468,13 +477,13 @@ export default function AssetsPage() {
 
 
       <Tabs defaultValue="inventory" className="w-full">
-          <TabsList className="grid w-full md:w-[400px] grid-cols-2 mb-4">
+          <TabsList className="grid w-full md:w-auto grid-cols-2 mb-4">
               <TabsTrigger value="inventory">Envanter Listesi</TabsTrigger>
               <TabsTrigger value="certificates">Sertifika Kontrolü (Beta)</TabsTrigger>
           </TabsList>
           
           <TabsContent value="inventory">
-              <div className="border border-border bg-card rounded-xl shadow-sm overflow-hidden">
+              <div className="border border-border bg-card rounded-xl shadow-sm overflow-hidden overflow-x-auto">
                 <table className="w-full text-left">
                     <thead className="bg-muted/40 border-b border-border">
                         <tr>
@@ -530,9 +539,9 @@ export default function AssetsPage() {
                                     ) : asset.provider}
                                 </td>
                                 <td className="px-6 py-4 text-xs font-mono text-muted-foreground">
-                                    <div className="flex gap-2">
-                                        {asset.details?.bitlocker && <Badge variant="outline" className="text-[10px] border-blue-500/30 text-blue-500 h-5">Full Disk Encrypted</Badge>}
-                                        {asset.details?.antivirus && <Badge variant="outline" className="text-[10px] border-emerald-500/30 text-emerald-500 h-5">AV Protected</Badge>}
+                                    <div className="flex flex-wrap gap-2">
+                                        {asset.details?.bitlocker && <Badge variant="outline" className="text-[10px] border-blue-500/30 text-blue-500 h-5 whitespace-nowrap">Encryption</Badge>}
+                                        {asset.details?.antivirus && <Badge variant="outline" className="text-[10px] border-emerald-500/30 text-emerald-500 h-5 whitespace-nowrap">Anti-virus</Badge>}
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 text-right">
@@ -544,7 +553,7 @@ export default function AssetsPage() {
                                 <td className="px-6 py-4">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" className="h-8 w-8 p-0">
+                                            <Button variant="outline" size="sm" className="h-8 w-8 p-0 border-dashed">
                                                 <span className="sr-only">Open menu</span>
                                                 <MoreHorizontal className="h-4 w-4" />
                                             </Button>
@@ -553,6 +562,11 @@ export default function AssetsPage() {
                                             <DropdownMenuItem onClick={() => handleEdit(asset)}>
                                                 <Pencil className="mr-2 h-4 w-4" /> Düzenle
                                             </DropdownMenuItem>
+                                            
+                                            <DropdownMenuItem onClick={() => handleHistory(asset)}>
+                                                <History className="mr-2 h-4 w-4" /> Drift Geçmişi (PRO)
+                                            </DropdownMenuItem>
+                                            
                                             <DropdownMenuItem className="text-red-500 focus:text-red-500" onClick={() => handleDelete(asset.id)}>
                                                 <Trash className="mr-2 h-4 w-4" /> Sil
                                             </DropdownMenuItem>
@@ -629,6 +643,107 @@ export default function AssetsPage() {
               </div>
           </TabsContent>
       </Tabs>
+
+      {historyId && (
+          <DriftHistoryDialog 
+            assetId={historyId} 
+            open={!!historyId} 
+            onOpenChange={(open) => { if(!open) setHistoryId(null); }} 
+          />
+      )}
     </div>
   );
+}
+
+// Internal Component for Drift History
+function DriftHistoryDialog({ assetId, open, onOpenChange }: { assetId: string, open: boolean, onOpenChange: (o: boolean) => void }) {
+    const [history, setHistory] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if(open && assetId) {
+            setLoading(true);
+            assets.getHistory(assetId)
+                .then(res => setHistory(res.data))
+                .catch(e => {
+                    console.error(e);
+                    // Handle 403 specially
+                    if(e.response?.status === 403) {
+                         alert(e.response.data.message || "Bu özellik için PRO pakete geçmelisiniz.");
+                         onOpenChange(false);
+                    }
+                })
+                .finally(() => setLoading(false));
+        }
+    }, [open, assetId, onOpenChange]);
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="sm:max-w-[700px] h-[80vh] flex flex-col">
+                <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2 font-mono">
+                         <History className="h-5 w-5 text-orange-500" />
+                         Configuration Drift History
+                    </DialogTitle>
+                    <p className="text-xs text-muted-foreground font-mono">
+                        Bu varlık üzerinde yapılan konfigürasyon değişikliklerinin zaman çizelgesi.
+                    </p>
+                </DialogHeader>
+                
+                <div className="flex-1 overflow-y-auto pr-2 space-y-4 py-4">
+                    {loading ? (
+                        <div className="flex items-center justify-center h-40">
+                             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                        </div>
+                    ) : history.length === 0 ? (
+                        <div className="text-center text-muted-foreground py-10 font-mono text-sm border-2 border-dashed border-muted rounded-xl">
+                            Henüz bir değişiklik kaydı bulunamadı.
+                        </div>
+                    ) : (
+                        <div className="relative border-l border-border/50 ml-4 space-y-8">
+                            {history.map((record, i) => (
+                                <div key={record.id} className="relative pl-6">
+                                     {/* Dot */}
+                                     <div className="absolute -left-1.5 top-1 h-3 w-3 rounded-full bg-border border-2 border-background ring-4 ring-background" />
+                                     
+                                     <div className="flex flex-col gap-1 mb-2">
+                                         <span className="text-xs font-mono text-muted-foreground">
+                                             {new Date(record.createdAt).toLocaleString()}
+                                         </span>
+                                         <span className="text-xs font-bold font-mono text-foreground">
+                                             {record.changedBy === 'SYSTEM' ? 'System Automation' : record.changedBy}
+                                         </span>
+                                     </div>
+
+                                     <div className="bg-muted/30 border border-border rounded-md p-3 font-mono text-xs overflow-x-auto">
+                                          {/* Simple Diff View */}
+                                          {record.diff && Object.keys(record.diff).length > 0 ? (
+                                              <div className="space-y-2">
+                                                  {Object.keys(record.diff).map(key => (
+                                                      <div key={key} className="grid grid-cols-[1fr_auto_1fr] gap-2 items-center">
+                                                          <div className="text-right text-red-400 break-all px-2 bg-red-400/5 rounded">
+                                                              {JSON.stringify(record.oldConfig?.[key]) || 'null'}
+                                                          </div>
+                                                          <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                                                          <div className="text-left text-emerald-400 break-all px-2 bg-emerald-400/5 rounded">
+                                                              {JSON.stringify(record.newConfig?.[key]) || 'null'}
+                                                          </div>
+                                                          <div className="col-span-3 text-[10px] text-center text-muted-foreground/50 border-b border-border/30 mb-1 pb-1">
+                                                              key: {key}
+                                                          </div>
+                                                      </div>
+                                                  ))}
+                                              </div>
+                                          ) : (
+                                              <span className="text-muted-foreground italic">No detailed diff available.</span>
+                                          )}
+                                     </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
 }

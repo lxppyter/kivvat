@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const asset_service_1 = require("./asset.service");
 const passport_1 = require("@nestjs/passport");
 const subscription_guard_1 = require("../common/guards/subscription.guard");
+const pro_guard_1 = require("../common/guards/pro.guard");
 let AssetController = class AssetController {
     assetService;
     constructor(assetService) {
@@ -31,6 +32,9 @@ let AssetController = class AssetController {
     }
     async update(id, body) {
         return this.assetService.update(id, body);
+    }
+    getHistory(id) {
+        return this.assetService.getHistory(id);
     }
     async remove(id) {
         return this.assetService.remove(id);
@@ -63,6 +67,14 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], AssetController.prototype, "update", null);
+__decorate([
+    (0, common_1.Get)(':id/history'),
+    (0, common_1.UseGuards)(pro_guard_1.ProGuard),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AssetController.prototype, "getHistory", null);
 __decorate([
     (0, common_1.Delete)(':id'),
     __param(0, (0, common_1.Param)('id')),

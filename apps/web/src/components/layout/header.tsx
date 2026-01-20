@@ -1,5 +1,3 @@
-"use client";
-
 import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -23,7 +21,7 @@ export function Header() {
           <input
              type="text"
              placeholder="Komut ara..."
-             className="h-9 w-64 rounded-md border border-input bg-background pl-9 pr-4 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground"
+             className="h-9 w-48 md:w-64 rounded-md border border-input bg-background pl-9 pr-4 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground"
           />
         </div>
       </div>

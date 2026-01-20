@@ -128,7 +128,7 @@ let AuthService = class AuthService {
                 role,
             }, {
                 secret: this.configService.get('JWT_SECRET'),
-                expiresIn: '15m',
+                expiresIn: '1h',
             }),
             this.jwtService.signAsync({
                 sub: userId,

@@ -112,7 +112,7 @@ let ScannerService = class ScannerService {
                 ...r,
                 remediation: r.status === 'NON_COMPLIANT' ? this.getRemediation(r.ruleId) : undefined
             }));
-            await this.processResults(results, plan);
+            await this.processResults(results, plan, userId);
             const passCount = results.filter(r => r.status === 'COMPLIANT').length;
             const total = results.length;
             const score = total > 0 ? Math.round((passCount / total) * 100) : 0;
@@ -185,7 +185,7 @@ let ScannerService = class ScannerService {
         }
         return results;
     }
-    async processResults(results, plan) {
+    async processResults(results, plan, userId) {
         for (const res of results) {
             const mappedCodes = this.getControlCode(res.ruleId);
             if (mappedCodes.length === 0) {
@@ -209,6 +209,7 @@ let ScannerService = class ScannerService {
                         source: 'Cloud-Guardian',
                         checkName: `${res.ruleId} (${res.resourceId})`,
                         resourceId: res.resourceId,
+                        userId,
                         result: res,
                         gaps: {
                             create: {

@@ -17,6 +17,9 @@ import {
 import { payment, auth } from "@/lib/api";
 import { useRouter, useSearchParams } from "next/navigation";
 
+const GUMROAD_CORE_URL = "https://gumroad.com/l/kivvat-core";
+const GUMROAD_PRO_URL = "https://gumroad.com/l/kivvat-pro";
+
 export default function BillingPage() {
   const [loading, setLoading] = useState(false);
   const [activating, setActivating] = useState(false);
@@ -162,14 +165,14 @@ export default function BillingPage() {
                 <div className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Tek Standart (KVKK veya GDPR)</div>
                 <div className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> 1 Bulut Hesabı Bağlantısı</div>
                 <div className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Temel Varlık Envanteri</div>
-                <div className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Politika Yönetimi</div>
-                <div className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Standart PDF Raporu</div>
+                <div className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Politika Yönetimi & İmza</div>
+                <div className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Otomatik Tarama (Günlük)</div>
             </CardContent>
             <CardFooter>
                  <Button 
-                    className="w-full font-mono bg-white text-neutral-900 border-2 border-neutral-900 hover:bg-neutral-900 hover:text-white transition-colors rounded-none uppercase tracking-wider" 
+                    className="w-full font-mono bg-white text-neutral-900 border-2 border-neutral-900 hover:bg-neutral-900 hover:text-white hover:translate-y-0 transition-colors rounded-none uppercase tracking-wider" 
                     disabled={userInfo?.plan === 'CORE'}
-                    onClick={() => window.open("https://gumroad.com/l/your-core-product", "_blank")}
+                    onClick={() => window.open(GUMROAD_CORE_URL, "_blank")}
                 >
                     {userInfo?.plan === 'CORE' ? "MEVCUT PLAN" : "SEÇ & BAŞLA"}
                  </Button>
@@ -196,15 +199,15 @@ export default function BillingPage() {
                 <div className="flex items-center gap-2 font-bold"><Globe className="h-4 w-4 text-primary" /> 3 Bulut Hesabı (AWS/Azure)</div>
                 <div className="flex items-center gap-2 font-bold"><Shield className="h-4 w-4 text-primary" /> 3 Uyumluluk Standardı</div>
                 <div className="flex items-center gap-2"><Zap className="h-4 w-4 text-primary" /> Olay Yönetimi (Incidents)</div>
-                <div className="flex items-center gap-2"><Briefcase className="h-4 w-4 text-primary" /> Tedarikçi Yönetimi</div>
-                <div className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Gelişmiş PDF Raporları</div>
+                <div className="flex items-center gap-2"><Briefcase className="h-4 w-4 text-primary" /> Tedarikçi Yönetimi (Vendors)</div>
+                <div className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> SSL/TLS Sertifika Takibi</div>
                 <div className="pl-6 text-muted-foreground">+ Tüm Core Özellikleri</div>
             </CardContent>
             <CardFooter>
                  <Button 
-                    className="w-full font-mono bg-primary text-white hover:bg-primary/90 transition-colors rounded-none uppercase tracking-wider"
+                    className="w-full font-mono bg-primary text-white hover:bg-primary/90 hover:translate-y-0 transition-colors rounded-none uppercase tracking-wider"
                     disabled={userInfo?.plan === 'PRO'}
-                    onClick={() => window.open("https://gumroad.com/l/your-product", "_blank")}
+                    onClick={() => window.open(GUMROAD_PRO_URL, "_blank")}
                 >
                     {userInfo?.plan === 'PRO' ? "MEVCUT PLAN" : "SEÇ & BAŞLA"}
                 </Button>
@@ -226,12 +229,12 @@ export default function BillingPage() {
                 <div className="flex items-center gap-2"><Globe className="h-4 w-4 text-primary" /> Sınırsız Bulut Hesabı</div>
                 <div className="flex items-center gap-2"><Shield className="h-4 w-4 text-primary" /> Sınırsız Standart</div>
                 <div className="flex items-center gap-2"><Lock className="h-4 w-4 text-primary" /> Denetçi Portalı (Audit Share)</div>
-                <div className="flex items-center gap-2"><LayoutTemplate className="h-4 w-4 text-primary" /> White-Labeling (Logo Ekleme)</div>
-                <div className="flex items-center gap-2"><Server className="h-4 w-4 text-primary" /> API Erişimi</div>
+                <div className="flex items-center gap-2"><LayoutTemplate className="h-4 w-4 text-primary" /> Öncelikli 7/24 Destek</div>
+                <div className="flex items-center gap-2"><Server className="h-4 w-4 text-primary" /> Özel Sözleşme & Fatura</div>
             </CardContent>
             <CardFooter>
                  <Button 
-                    className="w-full font-mono bg-white text-neutral-900 border-2 border-neutral-900 hover:bg-neutral-900 hover:text-white transition-colors rounded-none uppercase tracking-wider" 
+                    className="w-full font-mono bg-white text-neutral-900 border-2 border-neutral-900 hover:bg-neutral-900 hover:text-white hover:translate-y-0 transition-colors rounded-none uppercase tracking-wider" 
                     disabled={userInfo?.plan === 'ENTERPRISE'}
                     onClick={() => window.open("mailto:sales@kivvat.com", "_blank")}
                 >

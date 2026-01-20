@@ -96,10 +96,10 @@ export function Hero() {
         {/* Main Headline (Scroll Parallax) */}
         <h1 ref={textRef} className="text-7xl lg:text-9xl font-bold text-neutral-900 leading-[0.9] mb-10 font-mono tracking-tight">
           <div className="hero-text-line text-left-anim block mb-2 bg-gradient-to-b from-neutral-900 to-neutral-500 text-transparent bg-clip-text">
-             UYUMLULUK
+             OTONOM
           </div>
           <div className="hero-text-line text-right-anim text-transparent bg-clip-text bg-gradient-to-r from-[#0D9488] via-[#2DD4BF] to-[#0D9488] animate-gradient-x tracking-widest">
-            OTOMASYONU
+            KIVVAT_OS
           </div>
         </h1>
 
@@ -110,14 +110,16 @@ export function Hero() {
         {/* Subtext */}
         <div ref={contentRef} className="max-w-3xl mx-auto">
             <p className="hero-anim text-xl lg:text-2xl text-neutral-600 font-light leading-relaxed mb-12">
-              <TextHighlight delay={1} color="#381D2A">Otomatik güvenlik mühendisiniz.</TextHighlight> <br />
-              <span className="font-mono text-sm text-primary uppercase tracking-wider">[ AWS / AZURE / GCP ]</span>
+              <TextHighlight delay={1} color="#381D2A">Bulut altyapınız için dijital güvenlik mühendisi.</TextHighlight> <br />
+              <span className="font-mono text-sm text-primary uppercase tracking-wider block mt-4 text-center">
+                  [ AWS / AZURE / GCP / ISO 27001 / SOC 2 ]
+              </span>
             </p>
             
             {/* CTA Buttons (Restored) */}
             <div className="hero-anim flex flex-col sm:flex-row items-center justify-center gap-6">
               <Link href="/register">
-                <Button className="h-16 px-12 rounded-none bg-primary text-white font-mono text-sm hover:bg-primary/90 hover:-tranneutral-y-1 transition-transform border border-primary">
+                <Button className="h-16 px-12 rounded-none bg-primary text-white font-mono text-sm hover:bg-primary/90 hover:translate-y-0 border border-primary">
                    BAŞLA <ChevronRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
@@ -133,15 +135,15 @@ export function Hero() {
                  <div className="flex flex-wrap justify-center gap-12 text-xs font-mono text-neutral-400 uppercase tracking-widest">
                      <div className="flex items-center gap-2">
                          <Terminal className="h-4 w-4 text-primary" />
-                         <span>Ajanız Tarama</span>
+                         <span>Ajan Gerektirmez</span>
                      </div>
                      <div className="flex items-center gap-2">
-                         <span className="font-bold text-neutral-900">0.05s</span>
-                         <span>Gecikme</span>
+                         <span className="font-bold text-neutral-900">7/24</span>
+                         <span>İzleme</span>
                      </div>
                      <div className="flex items-center gap-2">
-                         <span className="font-bold text-neutral-900">100%</span>
-                         <span>Kapsama</span>
+                         <span className="font-bold text-neutral-900">%100</span>
+                         <span>Görünürlük</span>
                      </div>
                  </div>
             </div>

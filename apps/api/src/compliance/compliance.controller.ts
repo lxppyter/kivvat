@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards, Request } from '@nestjs/common';
 import { ComplianceService } from './compliance.service';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -13,7 +13,7 @@ export class ComplianceController {
   }
 
   @Get('standards')
-  getStandards() {
-    return this.complianceService.findAll();
+  async getStandards(@Request() req: any) {
+    return this.complianceService.findAll(req.user.userId || req.user.id);
   }
 }

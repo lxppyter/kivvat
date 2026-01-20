@@ -7,13 +7,13 @@ export declare class PolicyController {
     getTemplates(): Promise<{
         id: string;
         name: string;
-        content: string;
-        category: string;
         createdAt: Date;
         updatedAt: Date;
+        content: string;
+        category: string;
         version: string;
     }[]>;
-    getAssignments(userId?: string): Promise<{
+    getAssignments(req: any, queryUserId?: string): Promise<{
         assignments: ({
             user: {
                 name: string | null;
@@ -27,12 +27,15 @@ export declare class PolicyController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            policyId: string;
             userId: string | null;
             status: string;
+            policyId: string;
             signedAt: Date | null;
             signerName: string | null;
             signerEmail: string | null;
+            ipAddress: string | null;
+            userAgent: string | null;
+            ownerId: string | null;
         })[];
         stats: {
             total: number;
@@ -50,14 +53,17 @@ export declare class PolicyController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        policyId: string;
         userId: string | null;
         status: string;
+        policyId: string;
         signedAt: Date | null;
         signerName: string | null;
         signerEmail: string | null;
+        ipAddress: string | null;
+        userAgent: string | null;
+        ownerId: string | null;
     }>;
-    getSignaturesStatus(): Promise<{
+    getSignaturesStatus(req: any): Promise<{
         id: string;
         name: string;
         email: string;
@@ -65,51 +71,55 @@ export declare class PolicyController {
         signedCount: number;
         totalPolicies: number;
         lastSigned: any;
+        lastIp: any;
+        lastUserAgent: any;
         status: string;
     }[]>;
     updatePolicy(id: string, content: string): Promise<{
         id: string;
         name: string;
-        content: string;
-        category: string;
         createdAt: Date;
         updatedAt: Date;
+        content: string;
+        category: string;
         version: string;
     }>;
     getHistory(id: string): Promise<{
         id: string;
-        content: string;
         createdAt: Date;
+        content: string;
         version: string;
         policyId: string;
     }[]>;
-    getShares(): Promise<({
+    getShares(req: any): Promise<({
         policy: {
             name: string;
         } | null;
     } & {
         id: string;
         createdAt: Date;
-        policyId: string | null;
+        active: boolean;
         token: string;
         expiresAt: Date | null;
-        active: boolean;
+        policyId: string | null;
+        creatorId: string | null;
     })[]>;
     revokeShare(id: string): Promise<{
         id: string;
         createdAt: Date;
-        policyId: string | null;
+        active: boolean;
         token: string;
         expiresAt: Date | null;
-        active: boolean;
+        policyId: string | null;
+        creatorId: string | null;
     }>;
-    createShareAllLink(body: {
+    createShareAllLink(req: any, body: {
         expiresAt?: string;
     }): Promise<{
         token: string;
         url: string;
     }>;
-    createShareLink(id: string, body: {
+    createShareLink(id: string, req: any, body: {
         expiresAt?: string;
     }): Promise<{
         token: string;
@@ -130,10 +140,10 @@ export declare class PolicyController {
         policy: {
             id: string;
             name: string;
-            content: string;
-            category: string;
             createdAt: Date;
             updatedAt: Date;
+            content: string;
+            category: string;
             version: string;
         } | null;
         policies?: undefined;
@@ -142,15 +152,18 @@ export declare class PolicyController {
         name: string;
         email: string;
         policyId?: string;
-    }): Promise<{
+    }, req: any): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        policyId: string;
         userId: string | null;
         status: string;
+        policyId: string;
         signedAt: Date | null;
         signerName: string | null;
         signerEmail: string | null;
+        ipAddress: string | null;
+        userAgent: string | null;
+        ownerId: string | null;
     }>;
 }

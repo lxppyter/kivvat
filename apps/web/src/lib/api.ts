@@ -48,7 +48,7 @@ api.interceptors.response.use(
 
           if (res.data.access_token) {
             // Update cookies
-            Cookies.set("token", res.data.access_token, { expires: 1/96 }); // 15 mins
+            Cookies.set("token", res.data.access_token, { expires: 1/24 }); // 60 mins
             if (res.data.refresh_token) {
               Cookies.set("refresh_token", res.data.refresh_token, { expires: 7 }); // 7 days
             }
@@ -131,6 +131,7 @@ export const assets = {
   update: (id: string, data: any) => api.patch(`/assets/${id}`, data),
   remove: (id: string) => api.delete(`/assets/${id}`),
   createBulk: (data: any) => api.post('/assets/bulk', data),
+  getHistory: (id: string) => api.get(`/assets/${id}/history`),
 };
 
 export const scanner = {

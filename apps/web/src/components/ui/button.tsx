@@ -8,16 +8,16 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = "default", size = "default", ...props }, ref) => {
+  ({ className, variant = "default", size = "default", children, ...props }, ref) => {
     return (
       <button
         ref={ref}
         className={cn(
-          "inline-flex items-center justify-center rounded-xl text-sm font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 active:scale-95",
+          "inline-flex items-center justify-center rounded-xl text-sm font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 active:scale-95 cursor-pointer",
           
           // Variants
           variant === "default" &&
-            "bg-primary text-primary-foreground shadow-[0_0_20px_-5px_var(--color-primary)] hover:shadow-[0_0_25px_-5px_var(--color-primary)] hover:-translate-y-0.5",
+            "bg-primary text-primary-foreground hover:bg-primary/90 shadow-none hover:shadow-none hover:translate-y-0 -skew-x-12 rounded-sm",
           variant === "destructive" &&
             "bg-destructive text-destructive-foreground hover:bg-destructive/90",
           variant === "outline" &&
@@ -37,7 +37,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           className
         )}
         {...props}
-      />
+      >
+        {variant === "default" ? (
+             <span className="skew-x-12 inline-flex items-center justify-center w-full h-full pointer-events-none">
+                 {children}
+             </span>
+        ) : children}
+      </button>
     );
   }
 );

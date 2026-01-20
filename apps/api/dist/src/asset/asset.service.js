@@ -48,15 +48,53 @@ let AssetService = class AssetService {
         });
     }
     async update(id, data) {
+        const currentAsset = await this.prisma.asset.findUnique({
+            where: { id },
+        });
+        if (!currentAsset) {
+            throw new Error('Asset not found');
+        }
+        const oldConfigStr = JSON.stringify(currentAsset.details);
+        const newConfigStr = JSON.stringify(data.details || currentAsset.details);
+        if (data.details && oldConfigStr !== newConfigStr) {
+            await this.prisma.assetHistory.create({
+                data: {
+                    assetId: id,
+                    oldConfig: currentAsset.details || {},
+                    newConfig: data.details,
+                    diff: this.calculateDiff(currentAsset.details, data.details),
+                    changedBy: 'SYSTEM',
+                }
+            });
+        }
         return this.prisma.asset.update({
             where: { id },
             data
+        });
+    }
+    async getHistory(assetId) {
+        return this.prisma.assetHistory.findMany({
+            where: { assetId },
+            orderBy: { createdAt: 'desc' }
         });
     }
     async remove(id) {
         return this.prisma.asset.delete({
             where: { id }
         });
+    }
+    calculateDiff(obj1, obj2) {
+        const diff = {};
+        const allKeys = new Set([...Object.keys(obj1 || {}), ...Object.keys(obj2 || {})]);
+        allKeys.forEach(key => {
+            if (JSON.stringify(obj1?.[key]) !== JSON.stringify(obj2?.[key])) {
+                diff[key] = {
+                    old: obj1?.[key],
+                    new: obj2?.[key]
+                };
+            }
+        });
+        return diff;
     }
 };
 exports.AssetService = AssetService;

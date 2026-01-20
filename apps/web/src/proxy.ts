@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function middleware(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
   const { pathname } = request.nextUrl;
 
@@ -49,7 +49,7 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Matcher allows us to filter which paths the middleware runs on.
+  // Matcher allows us to filter which paths the proxy runs on.
   // We exclude common static paths here as a first line of defense.
   matcher: [
     '/((?!api|_next/static|_next/image|favicon.ico).*)',

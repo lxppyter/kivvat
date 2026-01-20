@@ -41,7 +41,7 @@ export default function LoginPage() {
 
       const data = await res.json();
       if (data.access_token) {
-        Cookies.set("token", data.access_token, { expires: 1/96 }); // 15 mins
+        Cookies.set("token", data.access_token, { expires: 1/24 }); // 60 mins
         if (data.refresh_token) {
           Cookies.set("refresh_token", data.refresh_token, { expires: 7 }); // 7 days
         }

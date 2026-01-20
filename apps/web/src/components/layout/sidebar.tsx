@@ -3,16 +3,52 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, ShieldCheck, ListCheck, FileText, Settings, Shield, Link as LinkIcon, LogOut, Database, ScrollText, AlertTriangle, Briefcase } from "lucide-react";
+import { LayoutDashboard, ShieldCheck, ListCheck, FileText, Settings, Shield, Link as LinkIcon, LogOut, Database, ScrollText, AlertTriangle, Briefcase, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { auth } from "@/lib/api";
 import Cookies from "js-cookie";
+
+const NAV_ITEMS = [
+  { icon: LayoutDashboard, label: "Genel Bakış", href: "/dashboard" },
+  { icon: Database, label: "Varlıklar", href: "/assets" },
+  { icon: ScrollText, label: "Politikalar", href: "/policies" },
+  { icon: FileText, label: "Raporlar", href: "/reports" },
+  { icon: AlertTriangle, label: "Olaylar", href: "/incidents", proOnly: true },
+  { icon: LinkIcon, label: "Bağlantı", href: "/connection", adminOnly: true },
+  { icon: ListCheck, label: "Görevler", href: "/tasks" },
+  { icon: Briefcase, label: "Tedarikçiler", href: "/vendors", proOnly: true },
+  { icon: ShieldCheck, label: "Uyumluluk", href: "/compliance" },
+  { icon: Settings, label: "Ayarlar", href: "/settings", adminOnly: true },
+];
+
+function NavLinks({ pathname, user, isAuditor, onItemClick }: { pathname: string, user: any, isAuditor: boolean, onItemClick?: () => void }) {
+    return (
+        <div className="flex flex-col gap-1 p-4 mb-auto">
+        {NAV_ITEMS
+        .filter(item => (!isAuditor || !item.adminOnly) && (!item.proOnly || (user?.plan === 'PRO' || user?.plan === 'ENTERPRISE')))
+        .map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            onClick={onItemClick}
+            className={cn(
+              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-mono font-medium transition-all tracking-wide",
+              "text-muted-foreground hover:bg-muted hover:text-foreground",
+              pathname === item.href && "bg-muted text-foreground font-bold shadow-sm"
+            )}
+          >
+            <item.icon className="h-4 w-4" />
+            {item.label}
+          </Link>
+        ))}
+      </div>
+    );
+}
 
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
-
   const [isAuditor, setIsAuditor] = useState(false);
 
   useEffect(() => {
@@ -35,7 +71,7 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 border-r border-border bg-background/50 backdrop-blur-xl z-40 print:hidden">
+    <aside className="fixed left-0 top-0 h-screen w-64 border-r border-border bg-background/50 backdrop-blur-xl z-40 print:hidden hidden md:block">
       <div className="flex h-16 items-center px-6 border-b border-border/50">
         <Shield className="h-5 w-5 text-primary mr-2.5" />
         <span className="text-lg font-bold tracking-tight text-foreground font-mono">
@@ -43,42 +79,65 @@ export function Sidebar() {
         </span>
       </div>
 
-      <div className="flex flex-col gap-1 p-4 mb-auto">
-        {[
-          { icon: LayoutDashboard, label: "Genel Bakış", href: "/dashboard" },
-          { icon: Database, label: "Varlıklar", href: "/assets" },
-          { icon: ScrollText, label: "Politikalar", href: "/policies" },
-          { icon: FileText, label: "Raporlar", href: "/reports" },
-          { icon: AlertTriangle, label: "Olaylar", href: "/incidents", proOnly: true },
-          { icon: LinkIcon, label: "Bağlantı", href: "/connection", adminOnly: true },
-          { icon: ListCheck, label: "Görevler", href: "/tasks" },
-          { icon: Briefcase, label: "Tedarikçiler", href: "/vendors", proOnly: true },
-          { icon: ShieldCheck, label: "Uyumluluk", href: "/compliance" },
-          { icon: Settings, label: "Ayarlar", href: "/settings", adminOnly: true },
-        ]
-        .filter(item => (!isAuditor || !item.adminOnly) && (!item.proOnly || (user?.plan === 'PRO' || user?.plan === 'ENTERPRISE')))
-        .map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-mono font-medium transition-all tracking-wide",
-              "text-muted-foreground hover:bg-muted hover:text-foreground",
-              pathname === item.href && "bg-muted text-foreground font-bold shadow-sm"
-            )}
-          >
-            <item.icon className="h-4 w-4" />
-            {item.label}
-          </Link>
-        ))}
-      </div>
-
-
-
+      <NavLinks pathname={pathname} user={user} isAuditor={isAuditor} />
       <ProfileSection isAuditor={isAuditor} user={user} onLogout={handleLogout} />
     </aside>
-    
   );
+}
+
+export function MobileSidebar({ open, setOpen }: { open: boolean, setOpen: (open: boolean) => void }) {
+    const pathname = usePathname();
+    const router = useRouter();
+    const [user, setUser] = useState<any>(null);
+    const [isAuditor, setIsAuditor] = useState(false);
+  
+    useEffect(() => {
+      if(!open) return;
+      setIsAuditor(Cookies.get("user_role") === "AUDITOR");
+      const fetchUser = async () => {
+        try {
+          const res = await auth.getProfile();
+          setUser(res.data);
+        } catch (error) {
+          console.error("Failed to fetch user profile", error);
+        }
+      };
+      fetchUser();
+    }, [open]);
+  
+    const handleLogout = () => {
+      Cookies.remove("token");
+      Cookies.remove("refresh_token");
+      router.push("/login");
+    };
+
+    if (!open) return null;
+
+    return (
+        <div className="fixed inset-0 z-[100] flex md:hidden">
+            {/* Backdrop */}
+            <div className="fixed inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setOpen(false)} />
+            
+            {/* Sidebar Panel */}
+            <div className="relative flex h-full w-3/4 max-w-xs flex-col border-r border-border bg-white dark:bg-slate-950 shadow-2xl animate-in slide-in-from-left duration-300">
+                <div className="flex h-16 items-center px-6 border-b border-border/50 justify-between">
+                    <div className="flex items-center">
+                        <Shield className="h-5 w-5 text-primary mr-2.5" />
+                        <span className="text-lg font-bold tracking-tight text-foreground font-mono">
+                        KIVVAT_OS
+                        </span>
+                    </div>
+                    {/* Close Button */}
+                    <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground p-1">
+                        <X className="h-5 w-5" />
+                    </button>
+                </div>
+
+                <NavLinks pathname={pathname} user={user} isAuditor={isAuditor} onItemClick={() => setOpen(false)} />
+                <ProfileSection isAuditor={isAuditor} user={user} onLogout={handleLogout} />
+            </div>
+        </div>
+    );
 }
 
 function ProfileSection({ isAuditor, user, onLogout }: { isAuditor: boolean; user: any; onLogout: () => void }) {
@@ -116,7 +175,16 @@ function ProfileSection({ isAuditor, user, onLogout }: { isAuditor: boolean; use
                  {user ? (user.companyName || user.name || user.email.split('@')[0]) : 'Yükleniyor...'}
              </span>
              <span className="text-[10px] text-muted-foreground font-mono truncate">
-                 {user?.subscription?.plan || 'COMPLIANCE CORE'}
+                 {(() => {
+                    const p = user?.plan || user?.subscription?.plan || 'FREE';
+                    const map: Record<string, string> = {
+                        'FREE': 'COMPLIANCE CORE',
+                        'CORE': 'COMPLIANCE CORE',
+                        'PRO': 'TRUST ARCHITECT',
+                        'ENTERPRISE': 'TOTAL AUTHORITY'
+                    };
+                    return map[p] || p;
+                 })()}
              </span>
            </div>
            <button onClick={onLogout} className="text-muted-foreground hover:text-destructive transition-colors" title="Çıkış Yap">

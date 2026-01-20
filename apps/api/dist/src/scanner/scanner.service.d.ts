@@ -15,12 +15,12 @@ export declare class ScannerService {
     constructor(awsScanner: AwsScanner, azureScanner: AzureScanner, gcpScanner: GcpScanner, prisma: PrismaService, taskService: TaskService);
     getReports(userId: string): Promise<{
         id: string;
+        createdAt: Date;
+        userId: string;
+        status: string;
         provider: string;
         score: number;
-        status: string;
         results: import("@prisma/client/runtime/client").JsonValue;
-        userId: string;
-        createdAt: Date;
     }[]>;
     private getControlCode;
     private getRemediation;
@@ -32,13 +32,13 @@ export declare class ScannerService {
     }>;
     getAssets(userId: string): Promise<{
         id: string;
-        provider: string;
-        status: string | null;
-        userId: string;
         name: string;
-        type: string;
-        region: string | null;
-        details: import("@prisma/client/runtime/client").JsonValue | null;
         updatedAt: Date;
+        userId: string;
+        status: string | null;
+        details: import("@prisma/client/runtime/client").JsonValue | null;
+        region: string | null;
+        type: string;
+        provider: string;
     }[]>;
 }

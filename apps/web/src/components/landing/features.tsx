@@ -7,20 +7,20 @@ import { TextScramble } from "@/components/ui/text-scramble";
 
 const features = [
     {
-        title: "KESİNTİSİZ RİSK İZLEME",
-        desc: "Akıcı hikaye anlatımı. Kullanıcı deneyimini bozmadan, sayfayı aşağıya kaydırdıkça ortaya çıkan akıllı risk analizleri ve uyarı mekanizmaları."
+        title: "ÇOKLU BULUT ENTEGRASYONU",
+        desc: "AWS, Azure ve GCP hesabınızı tek tıkla bağlayın. KIVVAT_OS, tüm bulut varlıklarınızı otomatik olarak keşfeder ve sınıflandırır. Ajan kurulumu gerektirmez."
     },
     {
-        title: "OTOMATİK KANIT TOPLAMA",
-        desc: "Manuel ekran görüntüsü almaya son. Sistem, denetimler için gereken tüm kanıtları anlık olarak loglar, zaman damgasıyla mühürler ve arşivler."
+        title: "OTONOM KANIT TOPLAMA",
+        desc: "Ekran görüntüsü alma devri bitti. Sistem, CIS ve ISO kontrollerini otomatik olarak çalıştırır, kanıtları toplar ve denetçinizin önüne koyar."
     },
     {
-        title: "HAZIR POLİTİKA KÜTÜPHANESİ",
-        desc: "Sıfırdan döküman yazmakla vakit kaybetmeyin. ISO 27001, SOC2 ve GDPR ile tam uyumlu, hukukçular tarafından onaylanmış hazır şablonları kullanın."
+        title: "DİJİTAL İMZALI POLİTİKALAR",
+        desc: "Word dosyalarıyla uğraşmayın. Politikaları dijital olarak yayınlayın, çalışanlarınızdan e-imza toplayın. Kimin neyi ne zaman okuduğu kayıt altında."
     },
     {
-        title: "ZERO-DATA GİZLİLİK",
-        desc: "Tam veri gizliliği. Müşteri verilerinize dokunmuyoruz. Sadece altyapı meta-verilerini ve konfigürasyonları analiz ediyoruz. Hassas verileriniz tamamen sizin kontrolünüzde."
+        title: "GİZLİLİK ODAKLI MİMARİ",
+        desc: "Kodlarınıza veya veritabanı içeriğinize erişmeyiz. Sadece altyapı konfigürasyonlarını (meta-data) analiz ederiz. Verileriniz tamamen sizin kontrolünüzde."
     },
 ];
 

@@ -28,8 +28,12 @@ let PolicyController = class PolicyController {
     async getTemplates() {
         return this.policyService.getTemplates();
     }
-    async getAssignments(userId) {
-        return this.policyService.getAssignments(userId);
+    async getAssignments(req, queryUserId) {
+        const user = req.user;
+        const targetId = (user.role === 'ADMIN' || user.role === 'AUDITOR') && queryUserId
+            ? queryUserId
+            : (user.userId || user.id);
+        return this.policyService.getAssignments(targetId);
     }
     async downloadTemplate(id, companyName) {
         return this.policyService.downloadTemplate(id, companyName || 'ACME Corp');
@@ -37,32 +41,69 @@ let PolicyController = class PolicyController {
     async signPolicy(id) {
         return this.policyService.signPolicy(id);
     }
-    async getSignaturesStatus() {
+    async getSignaturesStatus(req) {
+        const user = req.user;
+        const userId = user.userId || user.id;
+        const usersWhere = (user.role === 'ADMIN' || user.role === 'AUDITOR')
+            ? {}
+            : { id: userId };
         const users = await this.prisma.user.findMany({
+            where: usersWhere,
             include: {
                 policyAssignments: {
-                    include: { policy: true }
+                    include: { policy: true },
+                    where: { status: 'SIGNED' }
                 }
             }
         });
+        let publicSignaturesWhere = { userId: null };
+        if (user.role !== 'ADMIN' && user.role !== 'AUDITOR') {
+            publicSignaturesWhere['ownerId'] = userId;
+        }
         const publicSignatures = await this.prisma.policyAssignment.findMany({
-            where: { userId: null },
+            where: publicSignaturesWhere,
             include: { policy: true }
         });
         const totalPoliciesCount = await this.prisma.policyTemplate.count();
-        const userStats = users.map(u => ({
-            id: u.id,
-            name: u.name || u.email,
-            email: u.email,
-            role: u.role,
-            signedCount: u.policyAssignments.filter(pa => pa.status === 'SIGNED').length,
-            totalPolicies: totalPoliciesCount,
-            lastSigned: u.policyAssignments.length > 0 ? u.policyAssignments[0].signedAt : null,
-            status: u.policyAssignments.filter(pa => pa.status === 'SIGNED').length >= totalPoliciesCount ? 'COMPLIANT' : 'PENDING'
-        }));
+        const userStats = users.map(u => {
+            const signedAssignments = u.policyAssignments.filter(pa => pa.status === 'SIGNED');
+            const lastAssignment = signedAssignments.sort((a, b) => (b.signedAt?.getTime() || 0) - (a.signedAt?.getTime() || 0))[0];
+            return {
+                id: u.id,
+                name: u.name || u.email,
+                email: u.email,
+                role: u.role,
+                signedCount: signedAssignments.length,
+                totalPolicies: totalPoliciesCount,
+                lastSigned: lastAssignment?.signedAt,
+                lastIp: lastAssignment?.ipAddress,
+                lastUserAgent: lastAssignment?.userAgent,
+                status: signedAssignments.length >= totalPoliciesCount ? 'COMPLIANT' : 'PENDING'
+            };
+        });
+        const emailToUserMap = new Map();
+        userStats.forEach(u => {
+            if (u.email)
+                emailToUserMap.set(u.email, u);
+        });
         const publicSignersMap = new Map();
         publicSignatures.forEach((ps) => {
             const email = ps.signerEmail || 'Unknown';
+            if (emailToUserMap.has(email)) {
+                const userStat = emailToUserMap.get(email);
+                userStat.signedCount += 1;
+                const psDate = new Date(ps.signedAt).getTime();
+                const userDate = userStat.lastSigned ? new Date(userStat.lastSigned).getTime() : 0;
+                if (psDate > userDate) {
+                    userStat.lastSigned = ps.signedAt;
+                    userStat.lastIp = ps.ipAddress;
+                    userStat.lastUserAgent = ps.userAgent;
+                }
+                if (userStat.signedCount >= userStat.totalPolicies) {
+                    userStat.status = 'COMPLIANT';
+                }
+                return;
+            }
             if (!publicSignersMap.has(email)) {
                 publicSignersMap.set(email, {
                     name: ps.signerName || 'Guest',
@@ -74,6 +115,7 @@ let PolicyController = class PolicyController {
         });
         const publicStats = Array.from(publicSignersMap.values()).map(singer => {
             const distinctSigned = new Set(singer.assignments.map(a => a.policyId)).size;
+            const lastAssignment = singer.assignments.sort((a, b) => new Date(b.signedAt).getTime() - new Date(a.signedAt).getTime())[0];
             return {
                 id: singer.email,
                 name: singer.name,
@@ -81,7 +123,9 @@ let PolicyController = class PolicyController {
                 role: 'GUEST',
                 signedCount: distinctSigned,
                 totalPolicies: totalPoliciesCount,
-                lastSigned: singer.assignments.sort((a, b) => b.signedAt.getTime() - a.signedAt.getTime())[0]?.signedAt,
+                lastSigned: lastAssignment?.signedAt,
+                lastIp: lastAssignment?.ipAddress,
+                lastUserAgent: lastAssignment?.userAgent,
                 status: distinctSigned >= totalPoliciesCount ? 'COMPLIANT' : 'PENDING'
             };
         });
@@ -93,23 +137,25 @@ let PolicyController = class PolicyController {
     async getHistory(id) {
         return this.policyService.getHistory(id);
     }
-    async getShares() {
-        return this.policyService.getShares();
+    async getShares(req) {
+        return this.policyService.getShares(req.user.userId || req.user.id);
     }
     async revokeShare(id) {
         return this.policyService.revokeShare(id);
     }
-    async createShareAllLink(body) {
-        return this.policyService.createShareLink(undefined, body?.expiresAt);
+    async createShareAllLink(req, body) {
+        return this.policyService.createShareLink(undefined, body?.expiresAt, req.user.userId || req.user.id);
     }
-    async createShareLink(id, body) {
-        return this.policyService.createShareLink(id, body?.expiresAt);
+    async createShareLink(id, req, body) {
+        return this.policyService.createShareLink(id, body?.expiresAt, req.user.userId || req.user.id);
     }
     async getPublicPolicy(token) {
         return this.policyService.getPublicPolicy(token);
     }
-    async signPublicPolicy(token, body) {
-        return this.policyService.signPublicPolicy(token, body.name, body.email, body.policyId);
+    async signPublicPolicy(token, body, req) {
+        const ip = req.ip || req.connection.remoteAddress;
+        const userAgent = req.headers['user-agent'];
+        return this.policyService.signPublicPolicy(token, body.name, body.email, body.policyId, ip, userAgent);
     }
 };
 exports.PolicyController = PolicyController;
@@ -123,9 +169,10 @@ __decorate([
 __decorate([
     (0, common_1.Get)('assignments'),
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), subscription_guard_1.SubscriptionGuard),
-    __param(0, (0, common_1.Query)('userId')),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Query)('userId')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], PolicyController.prototype, "getAssignments", null);
 __decorate([
@@ -148,8 +195,9 @@ __decorate([
 __decorate([
     (0, common_1.Get)('signatures'),
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), subscription_guard_1.SubscriptionGuard),
+    __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], PolicyController.prototype, "getSignaturesStatus", null);
 __decorate([
@@ -172,8 +220,9 @@ __decorate([
 __decorate([
     (0, common_1.Get)('shares'),
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), subscription_guard_1.SubscriptionGuard),
+    __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], PolicyController.prototype, "getShares", null);
 __decorate([
@@ -187,18 +236,20 @@ __decorate([
 __decorate([
     (0, common_1.Post)('share/all'),
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), subscription_guard_1.SubscriptionGuard),
-    __param(0, (0, common_1.Body)()),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], PolicyController.prototype, "createShareAllLink", null);
 __decorate([
     (0, common_1.Post)(':id/share'),
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), subscription_guard_1.SubscriptionGuard),
     __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Body)()),
+    __param(1, (0, common_1.Request)()),
+    __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String, Object, Object]),
     __metadata("design:returntype", Promise)
 ], PolicyController.prototype, "createShareLink", null);
 __decorate([
@@ -212,8 +263,9 @@ __decorate([
     (0, common_1.Post)('public/:token/sign'),
     __param(0, (0, common_1.Param)('token')),
     __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String, Object, Object]),
     __metadata("design:returntype", Promise)
 ], PolicyController.prototype, "signPublicPolicy", null);
 exports.PolicyController = PolicyController = __decorate([

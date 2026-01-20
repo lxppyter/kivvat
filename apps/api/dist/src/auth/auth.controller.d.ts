@@ -16,38 +16,38 @@ export declare class AuthController {
     getProfile(req: any): Promise<{
         subscription: {
             id: string;
-            plan: string;
             createdAt: Date;
             updatedAt: Date;
             userId: string;
             status: string;
+            plan: string;
             startDate: Date;
             endDate: Date | null;
         } | null;
-        email: string;
-        role: import("@prisma/client").$Enums.Role;
         id: string;
-        licenseKey: string | null;
         name: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        email: string;
+        licenseKey: string | null;
         companyName: string | null;
+        role: import("@prisma/client").$Enums.Role;
         plan: import("@prisma/client").$Enums.Plan;
         licenseExpiresAt: Date | null;
         subscriptionStatus: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     updateProfile(req: any, dto: UpdateProfileDto): Promise<{
-        email: string;
-        role: import("@prisma/client").$Enums.Role;
         id: string;
-        licenseKey: string | null;
         name: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        email: string;
+        licenseKey: string | null;
         companyName: string | null;
+        role: import("@prisma/client").$Enums.Role;
         plan: import("@prisma/client").$Enums.Plan;
         licenseExpiresAt: Date | null;
         subscriptionStatus: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     logout(req: any): Promise<void>;
     refreshTokens(req: any): Promise<{

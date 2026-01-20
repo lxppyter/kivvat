@@ -51,7 +51,10 @@ model User {
   incidents Incident[]
   vendors   Vendor[]
   policyAssignments PolicyAssignment[]
+  ownedAssignments  PolicyAssignment[] @relation("OwnedAssignments")
+  createdShares     PolicyShare[]      @relation("CreatedShares")
   auditShares AuditShare[]
+  evidences     Evidence[]
   subscription Subscription?
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt      @map("updated_at")
@@ -87,9 +90,25 @@ model Asset {
   userId    String     @map("user_id")
   user      User     @relation(fields: [userId], references: [id])
   
+  
+  history   AssetHistory[]
+  
   updatedAt DateTime @updatedAt @map("updated_at")
   
   @@map("assets")
+}
+
+model AssetHistory {
+  id        String   @id @default(uuid())
+  assetId   String   @map("asset_id")
+  asset     Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  oldConfig Json?    @map("old_config") // Snapshot before change
+  newConfig Json?    @map("new_config") // Snapshot after change
+  diff      Json?    // Computed difference
+  changedBy String?  @map("changed_by") // User ID or 'SYSTEM'
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("asset_history")
 }
 
 model ScanReport {
@@ -143,6 +162,10 @@ model Evidence {
   result      Json          // Raw result data
   screenshotPath String?    @map("screenshot_path")   // Path to local file or S3 URL
   timestamp   DateTime      @default(now())
+  
+  userId      String?       @map("user_id")
+  user        User?         @relation(fields: [userId], references: [id])
+
   gaps        GapAnalysis[]
 
   @@map("evidences")
@@ -216,12 +239,17 @@ model PolicyAssignment {
   signedAt    DateTime?     @map("signed_at")
   signerName  String?       @map("signer_name") // For public signers
   signerEmail String?       @map("signer_email") // For public signers
+  ipAddress   String?       @map("ip_address")
+  userAgent   String?       @map("user_agent")
   
   user        User?         @relation(fields: [userId], references: [id])
   policy      PolicyTemplate @relation(fields: [policyId], references: [id])
   
   createdAt   DateTime      @default(now()) @map("created_at")
   updatedAt   DateTime      @updatedAt      @map("updated_at")
+
+  ownerId     String?       @map("owner_id")
+  owner       User?         @relation("OwnedAssignments", fields: [ownerId], references: [id])
 
   // Removed unique constraint to allow multiple public signers for same policy
   // @@unique([userId, policyId]) 
@@ -236,6 +264,9 @@ model PolicyShare {
   expiresAt DateTime?      @map("expires_at")
   createdAt DateTime       @default(now()) @map("created_at")
   active    Boolean        @default(true)
+  
+  creatorId String?        @map("creator_id")
+  creator   User?          @relation("CreatedShares", fields: [creatorId], references: [id])
 
   @@map("policy_shares")
 }

@@ -19,8 +19,14 @@ export class PolicyController {
 
   @Get('assignments')
   @UseGuards(AuthGuard('jwt'), SubscriptionGuard)
-  async getAssignments(@Query('userId') userId?: string) {
-    return this.policyService.getAssignments(userId);
+  async getAssignments(@Request() req: any, @Query('userId') queryUserId?: string) {
+    // SECURITY: Force current user unless Admin
+    const user = req.user;
+    const targetId = (user.role === 'ADMIN' || user.role === 'AUDITOR') && queryUserId 
+        ? queryUserId 
+        : (user.userId || user.id);
+        
+    return this.policyService.getAssignments(targetId);
   }
   
   @Get('download/:id')
@@ -37,44 +43,108 @@ export class PolicyController {
 
   @Get('signatures')
   @UseGuards(AuthGuard('jwt'), SubscriptionGuard)
-  async getSignaturesStatus() {
-      // Logic: Get all users and their policy assignments
+  async getSignaturesStatus(@Request() req: any) {
+      const user = req.user;
+      const userId = user.userId || user.id;
+      
+      // Filter logic: 
+      // ADMIN/AUDITOR -> See ALL
+      // STAFF -> See themselves + Public Signers they own (ownerId = userId)
+
+      // 1. Get Registered Users (Self or All)
+      const usersWhere = (user.role === 'ADMIN' || user.role === 'AUDITOR') 
+          ? {} 
+          : { id: userId }; 
+
       const users = await this.prisma.user.findMany({
+          where: usersWhere,
           include: {
               policyAssignments: {
-                  include: { policy: true }
+                  include: { policy: true },
+                  where: { status: 'SIGNED' }
               }
           }
       });
 
-      // Transform for UI
-      // TODO: Include public signers in this list too?
-      // For now, let's append public signers separately or mix them.
-      
+      // 2. Get Public Signatures (Owned by me or All)
+      let publicSignaturesWhere: any = { userId: null };
+      if (user.role !== 'ADMIN' && user.role !== 'AUDITOR') {
+          publicSignaturesWhere['ownerId'] = userId;
+      }
+
       const publicSignatures = await this.prisma.policyAssignment.findMany({
-          where: { userId: null } as any,
+          where: publicSignaturesWhere,
           include: { policy: true }
       });
 
       // Metric: Total Active Policies
       const totalPoliciesCount = await this.prisma.policyTemplate.count();
 
-      const userStats = users.map(u => ({
-          id: u.id,
-          name: u.name || u.email,
-          email: u.email,
-          role: u.role,
-          signedCount: u.policyAssignments.filter(pa => pa.status === 'SIGNED').length,
-          totalPolicies: totalPoliciesCount, // Real count
-          lastSigned: u.policyAssignments.length > 0 ? u.policyAssignments[0].signedAt : null,
-          status: u.policyAssignments.filter(pa => pa.status === 'SIGNED').length >= totalPoliciesCount ? 'COMPLIANT' : 'PENDING'
-      }));
+      const userStats = users.map(u => {
+          const signedAssignments = u.policyAssignments.filter(pa => pa.status === 'SIGNED');
+          const lastAssignment = signedAssignments.sort((a,b) => (b.signedAt?.getTime() || 0) - (a.signedAt?.getTime() || 0))[0];
+
+          return {
+            id: u.id,
+            name: u.name || u.email,
+            email: u.email,
+            role: u.role,
+            signedCount: signedAssignments.length,
+            totalPolicies: totalPoliciesCount, // Real count
+            lastSigned: lastAssignment?.signedAt,
+            lastIp: (lastAssignment as any)?.ipAddress,
+            lastUserAgent: (lastAssignment as any)?.userAgent,
+            status: signedAssignments.length >= totalPoliciesCount ? 'COMPLIANT' : 'PENDING'
+          };
+      });
+
+      // Map Registered Emails to UserStats Index for merging
+      const emailToUserMap = new Map<string, any>();
+      userStats.forEach(u => {
+          if (u.email) emailToUserMap.set(u.email, u);
+      });
 
       // Group Public Signers by Email
       const publicSignersMap = new Map<string, { name: string, email: string, assignments: any[] }>();
       
       publicSignatures.forEach((ps: any) => {
           const email = ps.signerEmail || 'Unknown';
+          
+          // DEDUPLICATION: If this email belongs to a registered user, merge it!
+          if (emailToUserMap.has(email)) {
+             const userStat = emailToUserMap.get(email);
+             
+             // Check if this specific policy is already counted in signedCount? 
+             // userStat.signedCount is based on INTERNAL assignments.
+             // If the user signed via LINK, it's a PUBLIC assignment.
+             // So we should increment the count logic carefully to avoid double counting if they somehow have both?
+             // But usually they won't have both signed.
+             
+             // Simple approach: Treat it as an additional signature
+             // However, we want unique policies.
+             // Ideally we should have fetched ALL assignments (public & private) for the user in step 1, but step 1 only looks at `u.policyAssignments` (internal).
+             // So, we can safely just "add" this public signature to the user's "virtual" list.
+             
+             userStat.signedCount += 1; // Increment count
+             
+             // Update Last Signed if newer
+             const psDate = new Date(ps.signedAt).getTime();
+             const userDate = userStat.lastSigned ? new Date(userStat.lastSigned).getTime() : 0;
+             
+             if (psDate > userDate) {
+                 userStat.lastSigned = ps.signedAt;
+                 userStat.lastIp = (ps as any).ipAddress;
+                 userStat.lastUserAgent = (ps as any).userAgent;
+             }
+             
+             // Re-evaluate status
+             if (userStat.signedCount >= userStat.totalPolicies) {
+                 userStat.status = 'COMPLIANT';
+             }
+             
+             return; // Skip adding to Public/Guest list
+          }
+
           if (!publicSignersMap.has(email)) {
               publicSignersMap.set(email, {
                   name: ps.signerName || 'Guest',
@@ -88,7 +158,8 @@ export class PolicyController {
       const publicStats = Array.from(publicSignersMap.values()).map(singer => {
           // Count distinct policies signed
           const distinctSigned = new Set(singer.assignments.map(a => a.policyId)).size;
-          
+          const lastAssignment = singer.assignments.sort((a,b) => new Date(b.signedAt).getTime() - new Date(a.signedAt).getTime())[0];
+
           return {
               id: singer.email, 
               name: singer.name,
@@ -96,7 +167,9 @@ export class PolicyController {
               role: 'GUEST',
               signedCount: distinctSigned,
               totalPolicies: totalPoliciesCount, // Denominator is ALL policies
-              lastSigned: singer.assignments.sort((a,b) => b.signedAt.getTime() - a.signedAt.getTime())[0]?.signedAt,
+              lastSigned: lastAssignment?.signedAt,
+              lastIp: (lastAssignment as any)?.ipAddress,
+              lastUserAgent: (lastAssignment as any)?.userAgent,
               status: distinctSigned >= totalPoliciesCount ? 'COMPLIANT' : 'PENDING'
           };
       });
@@ -119,8 +192,8 @@ export class PolicyController {
   // --- SHARE ENDPOINTS (Protected) ---
   @Get('shares')
   @UseGuards(AuthGuard('jwt'), SubscriptionGuard)
-  async getShares() {
-      return this.policyService.getShares();
+  async getShares(@Request() req: any) {
+      return this.policyService.getShares(req.user.userId || req.user.id);
   }
 
   @Delete('share/:id') 
@@ -131,14 +204,14 @@ export class PolicyController {
 
   @Post('share/all')
   @UseGuards(AuthGuard('jwt'), SubscriptionGuard)
-  async createShareAllLink(@Body() body: { expiresAt?: string }) {
-      return this.policyService.createShareLink(undefined, body?.expiresAt);
+  async createShareAllLink(@Request() req: any, @Body() body: { expiresAt?: string }) {
+      return this.policyService.createShareLink(undefined, body?.expiresAt, req.user.userId || req.user.id);
   }
 
   @Post(':id/share')
   @UseGuards(AuthGuard('jwt'), SubscriptionGuard)
-  async createShareLink(@Param('id') id: string, @Body() body: { expiresAt?: string }) {
-      return this.policyService.createShareLink(id, body?.expiresAt);
+  async createShareLink(@Param('id') id: string, @Request() req: any, @Body() body: { expiresAt?: string }) {
+      return this.policyService.createShareLink(id, body?.expiresAt, req.user.userId || req.user.id);
   }
 
   // --- PUBLIC ENDPOINTS (No Guard) ---
@@ -149,7 +222,9 @@ export class PolicyController {
   }
 
   @Post('public/:token/sign')
-  async signPublicPolicy(@Param('token') token: string, @Body() body: { name: string, email: string, policyId?: string }) {
-      return this.policyService.signPublicPolicy(token, body.name, body.email, body.policyId);
+  async signPublicPolicy(@Param('token') token: string, @Body() body: { name: string, email: string, policyId?: string }, @Request() req: any) {
+      const ip = req.ip || req.connection.remoteAddress;
+      const userAgent = req.headers['user-agent'];
+      return this.policyService.signPublicPolicy(token, body.name, body.email, body.policyId, ip, userAgent);
   }
 }

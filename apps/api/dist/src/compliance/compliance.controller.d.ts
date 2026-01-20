@@ -14,11 +14,12 @@ export declare class ComplianceController {
         };
         lastAudit: Date;
     }[]>;
-    getStandards(): Promise<{
+    getStandards(req: any): Promise<{
         id: string;
         name: string;
         description: string | null;
         complianceScore: number;
+        analyzed: boolean;
         controls: {
             id: string;
             code: string;

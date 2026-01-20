@@ -25,12 +25,15 @@ export declare class PolicyService {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
             userId: string | null;
+            status: string;
             policyId: string;
             signedAt: Date | null;
             signerName: string | null;
             signerEmail: string | null;
+            ipAddress: string | null;
+            userAgent: string | null;
+            ownerId: string | null;
         })[];
         stats: {
             total: number;
@@ -44,12 +47,15 @@ export declare class PolicyService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
         userId: string | null;
+        status: string;
         policyId: string;
         signedAt: Date | null;
         signerName: string | null;
         signerEmail: string | null;
+        ipAddress: string | null;
+        userAgent: string | null;
+        ownerId: string | null;
     }>;
     updatePolicy(id: string, newContent: string): Promise<{
         id: string;
@@ -71,7 +77,7 @@ export declare class PolicyService {
         name: string;
         content: string;
     }>;
-    createShareLink(policyId?: string, expiresAt?: Date | string): Promise<{
+    createShareLink(policyId?: string, expiresAt?: Date | string, creatorId?: string): Promise<{
         token: string;
         url: string;
     }>;
@@ -98,18 +104,21 @@ export declare class PolicyService {
         } | null;
         policies?: undefined;
     }>;
-    signPublicPolicy(token: string, signerName: string, signerEmail: string, policyId?: string): Promise<{
+    signPublicPolicy(token: string, signerName: string, signerEmail: string, policyId?: string, ip?: string, userAgent?: string): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
         userId: string | null;
+        status: string;
         policyId: string;
         signedAt: Date | null;
         signerName: string | null;
         signerEmail: string | null;
+        ipAddress: string | null;
+        userAgent: string | null;
+        ownerId: string | null;
     }>;
-    getShares(): Promise<({
+    getShares(userId: string): Promise<({
         policy: {
             name: string;
         } | null;
@@ -120,6 +129,7 @@ export declare class PolicyService {
         token: string;
         expiresAt: Date | null;
         policyId: string | null;
+        creatorId: string | null;
     })[]>;
     revokeShare(id: string): Promise<{
         id: string;
@@ -128,5 +138,6 @@ export declare class PolicyService {
         token: string;
         expiresAt: Date | null;
         policyId: string | null;
+        creatorId: string | null;
     }>;
 }

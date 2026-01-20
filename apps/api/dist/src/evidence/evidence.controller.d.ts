@@ -5,21 +5,22 @@ export declare class EvidenceController {
     getHistory(controlId: string): Promise<({
         gaps: {
             id: string;
-            controlId: string;
-            evidenceId: string;
-            status: import("@prisma/client").$Enums.ComplianceStatus;
-            details: string | null;
             createdAt: Date;
             updatedAt: Date;
+            status: import("@prisma/client").$Enums.ComplianceStatus;
+            details: string | null;
+            controlId: string;
+            evidenceId: string;
         }[];
     } & {
-        result: import("@prisma/client/runtime/client").JsonValue;
         id: string;
+        result: import("@prisma/client/runtime/client").JsonValue;
         source: string;
         resourceId: string | null;
         checkName: string;
         screenshotPath: string | null;
         timestamp: Date;
+        userId: string | null;
     })[]>;
     getEvidence(id: string): Promise<({
         gaps: ({
@@ -27,35 +28,36 @@ export declare class EvidenceController {
                 standard: {
                     id: string;
                     name: string;
+                    description: string | null;
                     createdAt: Date;
                     updatedAt: Date;
-                    description: string | null;
                 };
             } & {
                 id: string;
                 name: string;
+                description: string | null;
                 createdAt: Date;
                 updatedAt: Date;
                 standardId: string;
                 code: string;
-                description: string | null;
             };
         } & {
             id: string;
-            controlId: string;
-            evidenceId: string;
-            status: import("@prisma/client").$Enums.ComplianceStatus;
-            details: string | null;
             createdAt: Date;
             updatedAt: Date;
+            status: import("@prisma/client").$Enums.ComplianceStatus;
+            details: string | null;
+            controlId: string;
+            evidenceId: string;
         })[];
     } & {
-        result: import("@prisma/client/runtime/client").JsonValue;
         id: string;
+        result: import("@prisma/client/runtime/client").JsonValue;
         source: string;
         resourceId: string | null;
         checkName: string;
         screenshotPath: string | null;
         timestamp: Date;
+        userId: string | null;
     }) | null>;
 }
