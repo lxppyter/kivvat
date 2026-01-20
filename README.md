@@ -92,11 +92,18 @@ Built with a high-performance, type-safe monorepo architecture:
    ```
 
 3. **Configure Environment:**
-   Create `.env` file in `apps/api` (see `.env.example`).
+   
+   **Backend (`apps/api`):**
+   Rename `apps/api/.env.example` to `.env` and update credentials.
    ```env
    DATABASE_URL="postgresql://user:password@localhost:5432/db"
-   JWT_SECRET="generate-secret-key"
-   FRONTEND_URL="http://localhost:3000"
+   JWT_SECRET="secure-key"
+   ```
+
+   **Frontend (`apps/web`):**
+   Rename `apps/web/.env.example` to `.env`.
+   ```env
+   NEXT_PUBLIC_API_URL="http://localhost:3000"
    ```
 
 4. **Initialize Database:**

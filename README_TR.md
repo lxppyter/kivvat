@@ -92,11 +92,18 @@ Yüksek performanslı, "Type-Safe" monorepo mimarisi ile geliştirilmiştir:
    ```
 
 3. **Çevresel Değişkenleri Ayarlayın:**
-   `apps/api` içinde `.env` dosyası oluşturun (bkz: `.env.example`).
+
+   **Backend (`apps/api`):**
+   `apps/api/.env.example` dosyasını `.env` olarak kopyalayın ve bilgilerinizi girin.
    ```env
    DATABASE_URL="postgresql://user:password@localhost:5432/db"
    JWT_SECRET="gizli-anahtar-olusturun"
-   FRONTEND_URL="http://localhost:3000"
+   ```
+
+   **Frontend (`apps/web`):**
+   `apps/web/.env.example` dosyasını `.env` olarak kopyalayın.
+   ```env
+   NEXT_PUBLIC_API_URL="http://localhost:3000"
    ```
 
 4. **Veritabanını Hazırlayın:**
