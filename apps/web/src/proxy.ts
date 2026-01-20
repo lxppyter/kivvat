@@ -18,7 +18,7 @@ export default function proxy(request: NextRequest) {
 
   // 2. DEFINE PUBLIC ROUTES
   // These routes can be accessed without a token
-  const publicRoutes = ['/login', '/register', '/hero', '/'];
+  const publicRoutes = ['/login', '/register', '/', '/contact'];
   // This logic handles dynamic routes better than exact match
   const isPublicRoute = 
       publicRoutes.some(path => pathname === path) || 

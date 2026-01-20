@@ -8,43 +8,43 @@ import {
 const faqs = [
   {
     id: "item-1",
-    question: "Verilerimiz güvende mi?",
-    answer: "Evet. Sistemimiz “Zero-Data Access” prensibiyle çalışır. Sadece bulut altyapınızın konfigürasyon meta-verilerini (metadata) okuyoruz. Veritabanlarınızın içeriğine veya kişisel verilerinize asla erişmiyoruz."
+    question: "Kivvat OS tam olarak nedir?",
+    answer: "Kivvat, bulut altyapınızı 7/24 izleyen, otomatik güvenlik taramaları yapan ve uyumluluk süreçlerini (ISO 27001, SOC 2) yöneten otonom bir dijital güvenlik mühendisidir. İnsan hatasını ortadan kaldırır."
   },
   {
     id: "item-2",
-    question: "Hangi bulut sağlayıcılarını destekliyorsunuz?",
-    answer: "Şu anda AWS, Microsoft Azure ve Google Cloud Platform (GCP) servislerini tam kapsamlı olarak destekliyoruz. Hibrit yapılar için de özel çözümlerimiz mevcuttur."
+    question: "Verilerim güvende mi?",
+    answer: "Kesinlikle. Sistemimiz altyapınıza sadece ve sadece 'Okuma' (Read-Only) yetkisiyle bağlanır. Verilerinizi değiştiremez, silemez veya kopyalayamaz. 'Zero-Data Access' prensibiyle çalışır."
   },
   {
     id: "item-3",
-    question: "Denetim garantisi veriyor musunuz?",
-    answer: "Sistemimiz sizi teknik olarak denetime %100 hazır hale getirir. Kontrol noktalarımız ISO ve SOC2 denetçilerinin beklentilerine göre tasarlanmıştır. Ayrıca Enterprise planımızda denetim sürecinde bizzat danışmanlık desteği de sunuyoruz."
+    question: "Fast-Track hizmeti nedir?",
+    answer: "Abonelik yerine 'Proje Bazlı' bir çözümdür. Acil denetim ihtiyacı olan şirketler için tasarlanmıştır. 90 gün içinde denetime hazır hale gelme garantisi sunar ve tek seferlik ödeme ile çalışır."
   },
   {
     id: "item-4",
-    question: "Kurulum ne kadar sürer?",
-    answer: "Agentless (ajan kurulumu gerektirmeyen) yapımız sayesinde bağlantı dakikalar içinde tamamlanır. İlk tarama raporunuzu bağlantıdan hemen sonra, genellikle 5 dakika içinde alırsınız."
+    question: "Hangi bulut servislerini destekliyorsunuz?",
+    answer: "AWS, Microsoft Azure ve Google Cloud (GCP) ile tam entegre çalışır. Çoklu bulut (Multi-Cloud) yapılarını tek bir panelden yönetebilirsiniz."
   },
   {
     id: "item-5",
-    question: "Slack veya Jira ile entegre çalışır mı?",
-    answer: "Kesinlikle. Güvenlik ve yazılım ekiplerinizin akışını bozmamak için Slack, Microsoft Teams, Jira ve Linear entegrasyonlarımız mevcuttur. Kritik bir bulgu olduğunda anında bildirim alırsınız veya otomatik ticket açılır."
+    question: "Ajan (Agent) kurmam gerekiyor mu?",
+    answer: "Hayır. Kivvat tamamen 'Agentless' çalışır. Sunucularınıza herhangi bir yazılım kurmanıza gerek yoktur. API üzerinden dakikalar içinde bağlanır ve taramaya başlar."
   },
   {
     id: "item-6",
-    question: "Ücretsiz deneme süresi var mı?",
-    answer: "Evet, Growth planımızı 14 gün boyunca ücretsiz deneyebilirsiniz. Kredi kartı bilgisi girmeniz gerekmez. Sadece hesap oluşturun ve taramaya başlayın."
+    question: "Denetim garantisi veriyor musunuz?",
+    answer: "Teknik olarak evet. Sistemimiz kontrol noktalarını ISO ve SOC2 denetçilerinin beklentilerine göre %100 uyumlu hale getirir. Enterprise planda bizzat danışmanlık desteği de sağlıyoruz."
   },
   {
     id: "item-7",
     question: "İstediğim zaman iptal edebilir miyim?",
-    answer: "Tabii ki. Taahhüt yok. Memnun kalmazsanız panel üzerinden tek tıkla aboneliği durdurabilirsiniz. Kullanmadığınız günlerin ücreti iade edilmez ancak dönem sonuna kadar erişiminiz devam eder."
+    answer: "Evet, hiçbir taahhüt yoktur. Panel üzerinden tek tıkla aboneliğinizi durdurabilirsiniz. Kullanmadığınız günlerin iadesi yapılmaz ancak dönem sonuna kadar erişiminiz devam eder."
   },
   {
     id: "item-8",
-    question: "Şirketimize özel kurallar tanımlayabilir miyiz?",
-    answer: "Evet, 'Policy-as-Code' motorumuz sayesinde kendi özel güvenlik kurallarınızı (Custom Policies) yazabilir veya mevcut şablonları şirket politikalarınıza göre düzenleyebilirsiniz."
+    question: "Özel güvenlik kuralları yazabilir miyim?",
+    answer: "Evet, 'Policy-as-Code' motorumuz sayesinde şirketimze özel güvenlik kurallarını (Custom Policies) sisteme tanımlayabilir ve otomatik olarak denetleyebilirsiniz."
   }
 ];
 

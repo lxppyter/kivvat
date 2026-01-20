@@ -252,6 +252,7 @@ export default function BillingPage() {
 
 function FastTrackCard() {
     const shineRef = useRef(null);
+    const router = useRouter();
     
     useEffect(() => {
         const ctx = gsap.context(() => {
@@ -312,7 +313,7 @@ function FastTrackCard() {
                         <span className="block text-4xl font-bold text-[#e7e6d9] font-mono">$2,900</span>
                         <span className="text-xs text-[#888] uppercase tracking-wider font-mono">Tek Seferlik / 3 Ay Erişim</span>
                     </div>
-                    <Button className="h-14 px-8 bg-[#e7e6d9] text-[#0b0b0b] hover:bg-white font-mono uppercase tracking-widest text-xs w-full" onClick={() => window.open("mailto:sales@kivvat.com?subject=Fast Track Request", "_blank")}>
+                    <Button className="h-14 px-8 bg-[#e7e6d9] text-[#0b0b0b] hover:bg-white font-mono uppercase tracking-widest text-xs w-full" onClick={() => router.push('/contact')}>
                         HIZLI BAŞVURU
                     </Button>
                  </div>

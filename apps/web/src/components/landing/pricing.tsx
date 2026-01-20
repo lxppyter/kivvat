@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { Check, ArrowRight, Zap, ShieldCheck, PlayCircle, Globe, LayoutTemplate, Lock, FileText, Server } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export function Pricing() {
   return (
@@ -217,9 +218,11 @@ function FastTrackCard() {
                         <span className="block text-4xl font-bold text-[#e7e6d9] font-mono">$2,900</span>
                         <span className="text-xs text-[#888] uppercase tracking-wider">Tek Seferlik / 3 Ay Erişim</span>
                     </div>
-                    <Button className="h-14 px-8 bg-[#e7e6d9] text-[#0b0b0b] hover:bg-white font-mono uppercase tracking-widest text-xs w-full">
-                        HIZLI BAŞVURU
-                    </Button>
+                    <Link href="/contact" className="w-full">
+                        <Button className="h-14 px-8 bg-[#e7e6d9] text-[#0b0b0b] hover:bg-white font-mono uppercase tracking-widest text-xs w-full">
+                            HIZLI BAŞVURU
+                        </Button>
+                    </Link>
                  </div>
             </div>
         </div>
